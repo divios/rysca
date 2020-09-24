@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 /* Dirección IPv4 a cero: "0.0.0.0" */
-ipv4_addr_t IPv4_ZERO_ADDR = { 0, 0, 0, 0 };
+ipv4_addr_t IPv4_ZERO_ADDR = {0, 0, 0, 0};
 
 
 /* void ipv4_addr_str ( ipv4_addr_t addr, char* str );
@@ -18,12 +18,11 @@ ipv4_addr_t IPv4_ZERO_ADDR = { 0, 0, 0, 0 };
  *    'str': Memoria donde se desea almacenar la cadena de texto generada.
  *           Deben reservarse al menos 'IPv4_STR_MAX_LENGTH' bytes.
  */
-void ipv4_addr_str ( ipv4_addr_t addr, char* str )
-{
-  if (str != NULL) {
-    sprintf(str, "%d.%d.%d.%d",
-            addr[0], addr[1], addr[2], addr[3]);
-  }
+void ipv4_addr_str(ipv4_addr_t addr, char *str) {
+    if (str != NULL) {
+        sprintf(str, "%d.%d.%d.%d",
+                addr[0], addr[1], addr[2], addr[3]);
+    }
 }
 
 
@@ -43,27 +42,26 @@ void ipv4_addr_str ( ipv4_addr_t addr, char* str )
  *   La función devuelve -1 si la cadena de texto no representaba una
  *   dirección IPv4.
  */
-int ipv4_str_addr ( char* str, ipv4_addr_t addr )
-{
-  int err = -1;
+int ipv4_str_addr(char *str, ipv4_addr_t addr) {
+    int err = -1;
 
-  if (str != NULL) {
-    unsigned int addr_int[IPv4_ADDR_SIZE];
-    int len = sscanf(str, "%d.%d.%d.%d", 
-                     &addr_int[0], &addr_int[1], 
-                     &addr_int[2], &addr_int[3]);
+    if (str != NULL) {
+        unsigned int addr_int[IPv4_ADDR_SIZE];
+        int len = sscanf(str, "%d.%d.%d.%d",
+                         &addr_int[0], &addr_int[1],
+                         &addr_int[2], &addr_int[3]);
 
-    if (len == IPv4_ADDR_SIZE) {
-      int i;
-      for (i=0; i<IPv4_ADDR_SIZE; i++) {
-        addr[i] = (unsigned char) addr_int[i];
-      }
-      
-      err = 0;
+        if (len == IPv4_ADDR_SIZE) {
+            int i;
+            for (i = 0; i < IPv4_ADDR_SIZE; i++) {
+                addr[i] = (unsigned char) addr_int[i];
+            }
+
+            err = 0;
+        }
     }
-  }
-  
-  return err;
+
+    return err;
 }
 
 
@@ -80,28 +78,27 @@ int ipv4_str_addr ( char* str, ipv4_addr_t addr )
  * VALOR DEVUELTO:
  *   El valor del checksum calculado.
  */
-uint16_t ipv4_checksum ( unsigned char * data, int len )
-{
-  int i;
-  uint16_t word16;
-  unsigned int sum = 0;
-    
-  /* Make 16 bit words out of every two adjacent 8 bit words in the packet
-   * and add them up */
-  for (i=0; i<len; i=i+2) {
-    word16 = ((data[i] << 8) & 0xFF00) + (data[i+1] & 0x00FF);
-    sum = sum + (unsigned int) word16;	
-  }
+uint16_t ipv4_checksum(unsigned char *data, int len) {
+    int i;
+    uint16_t word16;
+    unsigned int sum = 0;
 
-  /* Take only 16 bits out of the 32 bit sum and add up the carries */
-  while (sum >> 16) {
-    sum = (sum & 0xFFFF) + (sum >> 16);
-  }
+    /* Make 16 bit words out of every two adjacent 8 bit words in the packet
+     * and add them up */
+    for (i = 0; i < len; i = i + 2) {
+        word16 = ((data[i] << 8) & 0xFF00) + (data[i + 1] & 0x00FF);
+        sum = sum + (unsigned int) word16;
+    }
 
-  /* One's complement the result */
-  sum = ~sum;
+    /* Take only 16 bits out of the 32 bit sum and add up the carries */
+    while (sum >> 16) {
+        sum = (sum & 0xFFFF) + (sum >> 16);
+    }
 
-  return (uint16_t) sum;
+    /* One's complement the result */
+    sum = ~sum;
+
+    return (uint16_t) sum;
 }
 
 
