@@ -62,11 +62,19 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
 
     unsigned char buffer;
     struct arp_message_t arp_message;
+    int ecoARP = 0;
 
     timerms_reset(&timer, timeout); //arrancamos el timer
 
     //escuchamos a la respuesta mientras que el timer siga vivo
     while (timerms_left(&timer) != 0) {
+
+
+        //si han pasado 2 segundos y no hemos recibido respuesta mandamos otra vez
+        if (timerms_left(&timer) <= 3000 && secondARP == 0) {
+            eth_send(iface, MAC_BCAST_ADDR, ARP_TYPE, (unsigned char *) &arp_payload, sizeof(arp_payload));
+            ecoARP = 1;
+        }
 
         eth_recv(iface, mac, ARP_TYPE, buffer, sizeof(struct arp_message_t),
                  timerms_left(&timer)); //solo recibimos si el mensaje es del tipo arp y esta dirigido a nuestra mac.
