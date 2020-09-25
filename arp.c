@@ -1,7 +1,9 @@
 #include "arp.h"
 #include "eth.h"
+#include "ipv4.h"
 
 #include <stdio.h>
+#include <arpa/inet.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <libgen.h>
@@ -9,15 +11,16 @@
 #include <timerms.h>
 
 
+
 #define IP_PROTOCOL 0x0800 //especificamos protocolo ip
-#define HARDW_TYPE = 0x0001 //especificamos que el hardware es eth
+#define HARDW_TYPE 0x0001 //especificamos que el hardware es eth
 
 #define ARP_TYPE 0x0800 //especificamos que el mensaje es de tipo ARP
-#define ARP_REQUEST = 0x0001 //simbolo para ARP request
-#define ARP_REPLY = 0x0002 //simbolo para ARP reply
+#define ARP_REQUEST 0x0001 //simbolo para ARP request
+#define ARP_REPLY 0x0002 //simbolo para ARP reply
 
 extern mac_addr_t MAC_BCAST_ADDR; //mac de broadcast
-#define UNKNOW_MAC = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; //cuando no sabemos la mac a utilizar
+#define UNKNOW_MAC {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; //cuando no sabemos la mac a utilizar
 
 
 timerms_t timer;
@@ -42,11 +45,11 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
 
     //Creamos y rellenamos la estructura de tipo arp_message que se utilizara como payload
     arp_message_t arp_payload;
-    arp_payload.hard_addr = HARDW_TYPE;// correspondiente a eth
-    arp_payload.protocol_type = IP_PROTOCOL; //correspondiente a ip
+    arp_payload.hard_addr = htons(HARDW_TYPE);// correspondiente a eth
+    arp_payload.protocol_type = htons(IP_PROTOCOL); //correspondiente a ip
     arp_payload.hard_size = 6;//pq eth tiene 6 octetos
     arp_payload.protocol_length = 4;
-    arp_payload.opcode = ARP_REQUEST; //1 request; 2 reply
+    arp_payload.opcode = htons(ARP_REQUEST); //1 request; 2 reply
     eth_getaddr(iface, arp_payload.mac_sender); //guardamos en mac_send la mac de la interfaz abierta
     arp_payload.ip_sender = {0, 0, 0, 0}; //hastq que no implementemos la capa ip dejamos esto a 0
     arp_payload.mac_target = UNKNOW_MAC;
@@ -85,7 +88,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
         //comprobamos que proviene de la ip que buscamos y ademas es arp reply
         //seguramente no necesitamos comprobar que el destino puesto que nos puede responder cualquier pc
         if (arp_message.ip_sender == destino &&
-            arp_message.opcode == ARP_REPLY) {
+                ntohs(arp_message.opcode) == ARP_REPLY) {
             //no hace falta guardar la mac puesto que ya lo hace eth_recv
             printf("ARP reply recibido")
             return 1;
