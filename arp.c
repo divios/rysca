@@ -44,7 +44,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
     eth_getaddr(iface, arp_payload.mac_sender); //guardamos en mac_send la mac de la interfaz abierta
     ipv4_str_addr(self_ip, arp_payload.ip_sender); //hastq que no implementemos la capa ip dejamos esto a 0
     memcpy(arp_payload.mac_target, UNKNOW_MAC, MAC_ADDR_SIZE); //En c la mejor forma de copiar arrays por ser
-    memcpy(arp_payload.ip_target, destino, IPv4_ADDR_SIZE) //punteros es con memcpy
+    memcpy(arp_payload.ip_target, destino, IPv4_ADDR_SIZE); //punteros es con memcpy
 
     //enviamos en broadcast un arp request
     if (eth_send(iface, MAC_BCAST_ADDR, ARP_TYPE, (unsigned char *) &arp_payload, sizeof(arp_payload)) ==
@@ -54,7 +54,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
     }
     printf("Enviado arp request");
 
-    unsigned char *buffer;
+    unsigned char *buffer = malloc(sizeof(arp_message_t));
     arp_message_t *arp_message;
     int ecoARP = 0;
 
@@ -75,11 +75,12 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
         // El segundo parametro no importa porque ni siquiera se comprueba
 
         arp_message = (arp_message_t *) buffer; //eth_recv nos devuelve del tipo undefined char, asi que convertimos
+        free(buffer);
 
         //comprobamos que proviene de la ip que buscamos y ademas es arp reply
         //seguramente no necesitamos comprobar que el destino puesto que nos puede responder cualquier pc
         if (memcmp(arp_message->ip_sender, destino, IPv4_ADDR_SIZE) &&
-            arp_message->opcode == ARP_REPLY {
+            arp_message->opcode == ARP_REPLY) {
             //no hace falta guardar la mac puesto que ya lo hace eth_recv
             printf("ARP reply recibido");
             return 1;
