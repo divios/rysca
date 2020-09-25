@@ -17,13 +17,13 @@
 #define ARP_REPLY 0x0002 //simbolo para ARP reply
 
 extern mac_addr_t MAC_BCAST_ADDR; //mac de broadcast
-mac_addr_t UNKNOW_MAC{0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; //cuando no sabemos la mac a utilizar
+mac_addr_t UNKNOW_MAC = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; //cuando no sabemos la mac a utilizar
 
 
 timerms_t timer;
 long int timeout = 5000; //5segundos
 
-char self_ip[4] = [0,0,0,0]; //la ip de nuestra interfaz (hasta que no implementemos la capa ip es todo a 0)
+char self_ip[] = {0,0,0,0}; //la ip de nuestra interfaz (hasta que no implementemos la capa ip es todo a 0)
 
 //definimos la cabecera
 
