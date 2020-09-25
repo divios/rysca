@@ -1,6 +1,8 @@
 #ifndef _ARP_H
 #define _ARP_H
 
+#include "eth.h"
+#include "ipv4.h"
 #include <stdint.h>
 
 
