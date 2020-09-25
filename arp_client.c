@@ -1,5 +1,6 @@
 #include "arp.h"
 #include "eth.h"
+#include "ipv4.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,15 +20,19 @@ int main(int argc, char *argv[]) {
     if ((argc < 1) || (argc > 2)) {
         printf("Uso: %s <iface> <ip> [<long>]\n", myself);
         printf("       <iface>: Nombre de la interfaz ARP\n");
-        printf("        <ip>: ip de la que se busca su MAC\n");
+        printf("        <ip>: ip del pc del cual necesitas su MAC\n");
         exit(-1);
     }
 
     //procesamos los argumentos
     char *iface_name = argv[1];
-    ipv4_addr_t ipv4_addr_dest = argv[2];
+    ipv4_addr_t ipv4_addr_dest;
 
-    //Faltaria ver si esos argumentos estan bien, la ip sobretodo si es valida
+    if (ipv4_str_addr ( argv[2], ipv4_addr_dest)){
+        printf("Direccion ip erronea");
+        exit(-1);
+    }
+
 
     //abrimos el puerto
     eth_iface_t * iface = eth_open(iface_name);
