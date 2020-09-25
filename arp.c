@@ -1,9 +1,11 @@
 #include "arp.h"
+#include "eth.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <libgen.h>
+#include <rawnet.h>
 #include <timerms.h>
 
 
@@ -38,6 +40,7 @@ typedef struct arp_message {
 
 int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
 
+    //Creamos y rellenamos la estructura de tipo arp_message que se utilizara como payload
     arp_message_t arp_payload;
     arp_payload.hard_addr = HARDW_TYPE;// correspondiente a eth
     arp_payload.protocol_type = IP_PROTOCOL; //correspondiente a ip
@@ -49,26 +52,32 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
     arp_payload.mac_target = UNKNOW_MAC;
     arp_payload.ip_target = destino;
 
-
+    //enviamos en broadcast un arp request
     if (eth_send(iface, MAC_BCAST_ADDR, ARP_TYPE, (unsigned char *) &arp_payload, sizeof(arp_payload)) ==
-        -1) { //enviamos en broadcast un arp request
-        return -1; //si no se ha podido enviar retornamos -1
-    }
+        -1) {
 
-    unsigned char buffer; //nos hemos quedado aquí
+        return -2; //si no se ha podido enviar retornamos -2
+    }
+    printf("Enviado arp request")
+
+    unsigned char buffer; //no estoy seguro de este tipo
 
     timerms_reset(&timer, timeout); //arrancamos el timer
 
+    //escuchamos a la respuesta mientras que el timer siga vivo
     while (timerms_left(&timer) != 0) {
 
-        eth_recv(iface, arp_payload.mac_sender, ARP_TYPE, buffer, sizeof(struct arp_message_t),
-                 timerms_left(&timer)); //solo recibimos si el mensaje es del tipo arp y esta dirigido a nuestra mac
+        eth_recv(iface, UNKNOW_MAC, ARP_TYPE, buffer, sizeof(struct arp_message_t),
+                 timerms_left(&timer)); //solo recibimos si el mensaje es del tipo arp y esta dirigido a nuestra mac.
+                 // El segundo parametro no importa porque ni siquiera se comprueba
 
         buffer = (struct arp_message) buffer; //eth_recv nos devuelve del tipo undefined char, asi que convertimos (no estoy muy seguro de esto)
 
+        //comprobamos que proviene de la ip que buscamos y ademas es arp reply
         if (buffer.ip_sender == destino &&
-            buffer.opcode == 2) {  //comprobamos que proviene de la ip que buscamos y ademas es arp reply
+            buffer.opcode == 2) {
             mac = buffer.mac_sender;  //todo esto se puede hacer con memcpy...
+            printf("ARP reply recibido")
             break;
         }
     }

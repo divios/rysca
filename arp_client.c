@@ -16,12 +16,39 @@
 int main(int argc, char *argv[]) {
     /* Mostrar mensaje de ayuda si el número de argumentos es incorrecto */
     char *myself = basename(argv[0]);
-    if ((argc < 4) || (argc > 5)) {
-        printf("Uso: %s <iface> <mac> <dir> [<long>]\n", myself);
-        printf("       <iface>: Nombre de la interfaz Ethernet\n");
-        printf("        <tipo>: Campo 'Tipo' de las tramas Ethernet\n");
-        printf("         <mac>: Dirección MAC del servidor Ethernet\n");
-        printf("        <long>: Longitud de los datos enviados al servidor Ethernet\n");
-        printf("                (%d bytes por defecto)\n", DEFAULT_PAYLOAD_LENGTH);
+    if ((argc < 1) || (argc > 2)) {
+        printf("Uso: %s <iface> <ip> [<long>]\n", myself);
+        printf("       <iface>: Nombre de la interfaz ARP\n");
+        printf("        <ip>: ip de la que se busca su MAC\n");
         exit(-1);
     }
+
+    //procesamos los argumentos
+    char *iface_name = argv[1];
+    ipv4_addr_t ipv4_addr_dest = argv[2];
+
+    //Faltaria ver si esos argumentos estan bien, la ip sobretodo si es valida
+
+    //abrimos el puerto
+    eth_iface_t * iface = eth_open(iface_name);
+    if ( iface== NULL) {
+        printf("No se pudo abrir la interfaz");
+        exit(-1)
+    }
+    mac_addr_t mac;
+
+    int resolve = arp_resolve(iface, ipv4_addr_dest, mac);
+
+    if (resolve == -2){
+        printf("No se pudo enviar el mensaje arp request");
+        exit(-1);
+    }else if(resolve == -1){
+        printf("No se recibio ningun ARP reply");
+        exit(-1);
+    }
+
+    printf("ip destino -> Mac destino");
+    eth_close(iface);
+
+
+}
