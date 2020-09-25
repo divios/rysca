@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     eth_iface_t * iface = eth_open(iface_name);
     if ( iface== NULL) {
         printf("No se pudo abrir la interfaz");
-        exit(-1)
+        exit(-1);
     }
     mac_addr_t mac;
 
