@@ -23,7 +23,7 @@ mac_addr_t UNKNOW_MAC{0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; //cuando no sabemos l
 timerms_t timer;
 long int timeout = 5000; //5segundos
 
-char self_ip[] = 0.0.0.0; //la ip de nuestra interfaz (hasta que no implementemos la capa ip es todo a 0)
+char self_ip[4] = [0,0,0,0]; //la ip de nuestra interfaz (hasta que no implementemos la capa ip es todo a 0)
 
 //definimos la cabecera
 
@@ -63,7 +63,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
     }
     printf("Enviado arp request");
 
-    unsigned char buffer[];
+    unsigned char buffer*;
     arp_message_t arp_message;
     int ecoARP = 0;
 
@@ -83,7 +83,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
                  timerms_left(&timer)); //solo recibimos si el mensaje es del tipo arp y esta dirigido a nuestra mac.
         // El segundo parametro no importa porque ni siquiera se comprueba
 
-        arp_message = (arp_message_t) buffer; //eth_recv nos devuelve del tipo undefined char, asi que convertimos
+        arp_message = (arp_message_t) *buffer; //eth_recv nos devuelve del tipo undefined char, asi que convertimos
 
         //comprobamos que proviene de la ip que buscamos y ademas es arp reply
         //seguramente no necesitamos comprobar que el destino puesto que nos puede responder cualquier pc
