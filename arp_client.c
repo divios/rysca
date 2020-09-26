@@ -17,7 +17,7 @@
 int main(int argc, char *argv[]) {
     /* Mostrar mensaje de ayuda si el número de argumentos es incorrecto */
     char *myself = basename(argv[0]);
-    if ((argc == 0) || (argc > 2)) {
+    if ((argc <= 2) || (argc > 3)) {
         printf("Uso: %s <iface> <ip> [<long>]\n", myself);
         printf("       <iface>: Nombre de la interfaz ARP\n");
         printf("        <ip>: ip del pc del cual necesitas su MAC\n");
