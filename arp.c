@@ -7,7 +7,7 @@
 #define ARP_REQUEST 0x0001 //simbolo para ARP request
 #define ARP_REPLY 0x0002 //simbolo para ARP reply
 
-extern mac_addr_t MAC_BCAST_ADDR; //mac de broadcast
+ //mac de broadcast
 mac_addr_t UNKNOW_MAC = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; //cuando no sabemos la mac a utilizar
 
 
@@ -49,10 +49,9 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
     //enviamos en broadcast un arp request
     if (eth_send(iface, MAC_BCAST_ADDR, ARP_TYPE, (unsigned char *) &arp_payload, sizeof(arp_payload)) ==
         -1) {
-
         return -2; //si no se ha podido enviar retornamos -2
     }
-    printf("Enviado arp request");
+    printf("Enviado arp request\n");
 
     unsigned char *buffer = malloc(sizeof(arp_message_t));
     arp_message_t *arp_message;
@@ -68,6 +67,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
         if (timerms_left(&timer) <= 3000 && ecoARP == 0) {
             eth_send(iface, MAC_BCAST_ADDR, ARP_TYPE, (unsigned char *) &arp_payload, sizeof(arp_message_t));
             ecoARP = 1;
+            printf("Enviado eco arp request\n");
         }
 
         eth_recv(iface, mac, ARP_TYPE, buffer, sizeof(arp_message_t),
@@ -82,7 +82,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
         if (memcmp(arp_message->ip_sender, destino, IPv4_ADDR_SIZE) &&
             arp_message->opcode == ARP_REPLY) {
             //no hace falta guardar la mac puesto que ya lo hace eth_recv
-            printf("ARP reply recibido");
+            printf("ARP reply recibido\n");
             return 1;
         }
         mac = NULL; //si no es lo que esperamos liberamos la mac que guardamos
