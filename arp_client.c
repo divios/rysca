@@ -51,8 +51,10 @@ int main(int argc, char *argv[]) {
         printf("No se recibio ningun ARP reply\n");
         exit(-1);
     }
-
-    printf("ip destino -> Mac destino\n");
+    char mac_str[MAC_ADDR_SIZE];
+    mac_addr_str(mac,mac_str);
+    printf("%d\n",resolve);
+    printf("ip destino= %s -> Mac destino= %s\n",argv[2], mac_str);
     eth_close(iface);
 
 

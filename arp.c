@@ -80,15 +80,17 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
             return buffer_len;
         }
         if (buffer_len < sizeof(arp_message_t)) {
+            printf("continuo\n");
             continue;
         }
         //eth_recv nos devuelve del tipo undefined char, asi que convertimos antes de copiar
-        memcpy(arp_message, (arp_message_t *)buffer, sizeof(arp_message_t));
+        arp_message = (arp_message_t *)buffer;
 
         //comprobamos que proviene de la ip que buscamos y ademas es arp reply
         //seguramente no necesitamos comprobar que el destino puesto que nos puede responder cualquier pc
-        if (memcmp(arp_message->ip_sender, destino, IPv4_ADDR_SIZE) &&
-            arp_message->opcode == ARP_REPLY) {
+
+
+        if (ntohs(arp_message->opcode) == ARP_REPLY) {
             //no hace falta guardar la mac puesto que ya lo hace eth_recv
             printf("ARP reply recibido\n");
             return 1;
