@@ -62,7 +62,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
     timerms_reset(&ecotimer, ecotimeout); //arrancamos el timer para enviar un arp a los 2 segundos sin respuesta
 
     //escuchamos a la respuesta mientras que el timer siga vivo
-    while (timerms_left(&timer) != 0) {
+    while (1) {
 
 
         //si han pasado 2 segundos y no hemos recibido respuesta mandamos otra vez
@@ -72,24 +72,21 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
             printf("Enviado eco arp request\n");
         }
 
+        //solo recibimos si el mensaje es del tipo arp reply
         int buffer_len = eth_recv(iface, mac, ARP_TYPE, buffer, sizeof(arp_message_t),
-                 timerms_left(&timer)); //solo recibimos si el mensaje es del tipo arp y esta dirigido a nuestra mac.
+                                  timerms_left(&timer));
 
-
-        if (buffer_len == -1 || buffer_len == 0){
+        if (buffer_len == -1 || buffer_len == 0) {
             return buffer_len;
         }
         if (buffer_len < sizeof(arp_message_t)) {
-            printf("continuo\n");
             continue;
         }
         //eth_recv nos devuelve del tipo undefined char, asi que convertimos antes de copiar
-        arp_message = (arp_message_t *)buffer;
+        memcpy(arp_message, (arp_message_t *) buffer, sizeof(arp_message_t));
 
         //comprobamos que proviene de la ip que buscamos y ademas es arp reply
         //seguramente no necesitamos comprobar que el destino puesto que nos puede responder cualquier pc
-
-
         if (ntohs(arp_message->opcode) == ARP_REPLY) {
             //no hace falta guardar la mac puesto que ya lo hace eth_recv
             printf("ARP reply recibido\n");

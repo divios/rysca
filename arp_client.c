@@ -28,15 +28,15 @@ int main(int argc, char *argv[]) {
     char *iface_name = argv[1];
     ipv4_addr_t ipv4_addr_dest;
 
-    if (ipv4_str_addr ( argv[2], ipv4_addr_dest)){
+    if (ipv4_str_addr(argv[2], ipv4_addr_dest)) {
         printf("Direccion ip erronea\n");
         exit(-1);
     }
 
 
     //abrimos el puerto
-    eth_iface_t * iface = eth_open(iface_name);
-    if ( iface== NULL) {
+    eth_iface_t *iface = eth_open(iface_name);
+    if (iface == NULL) {
         printf("No se pudo abrir la interfaz\n");
         exit(-1);
     }
@@ -44,17 +44,17 @@ int main(int argc, char *argv[]) {
 
     int resolve = arp_resolve(iface, ipv4_addr_dest, mac);
 
-    if (resolve == -2){
+    if (resolve == -2) {
         printf("No se pudo enviar el mensaje arp request\n");
         exit(-1);
-    }else if(resolve == -1){
+    } else if (resolve == -1) {
         printf("No se recibio ningun ARP reply\n");
         exit(-1);
     }
     char mac_str[MAC_ADDR_SIZE];
-    mac_addr_str(mac,mac_str);
-    printf("%d\n",resolve);
-    printf("ip destino= %s -> Mac destino= %s\n",argv[2], mac_str);
+    mac_addr_str(mac, mac_str);
+    printf("%d\n", resolve);
+    printf("ip destino= %s -> Mac destino= %s\n", argv[2], mac_str);
     eth_close(iface);
 
 
