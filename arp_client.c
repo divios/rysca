@@ -47,13 +47,12 @@ int main(int argc, char *argv[]) {
     if (resolve == -2) {
         printf("No se pudo enviar el mensaje arp request\n");
         exit(-1);
-    } else if (resolve == -1) {
+    } else if (resolve == -1 || resolve == 0) {
         printf("No se recibio ningun ARP reply\n");
         exit(-1);
     }
     char mac_str[MAC_ADDR_SIZE];
     mac_addr_str(mac, mac_str);
-    printf("%d\n", resolve);
     printf("ip destino= %s -> Mac destino= %s\n", argv[2], mac_str);
     eth_close(iface);
 
