@@ -12,10 +12,8 @@ mac_addr_t UNKNOW_MAC = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; //cuando no sabemo
 
 
 timerms_t timer;
-timerms_t ecotimer;
-long int timeout = 5000; //5 segundos
-long int ecotimeout = 2000; //2 segundo
-
+long int timeout = 2000; //2 segundos
+long int ecotimeout = 3000; //3 segundos
 //definimos la cabecera
 
 typedef struct arp_message {
@@ -58,32 +56,32 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
     arp_message_t *arp_message = NULL;
     int ecoARP = 0;
 
-    timerms_reset(&timer, timeout); //arrancamos el timer
-    timerms_reset(&ecotimer, ecotimeout); //arrancamos el timer para enviar un arp a los 2 segundos sin respuesta
+    timerms_reset(&timer, timeout); //arrancamos el timer//arrancamos el timer para enviar un arp a los 2 segundos sin respuesta
 
     //escuchamos a la respuesta mientras que el timer siga vivo
     while (1) {
 
 
         //si han pasado 2 segundos y no hemos recibido respuesta mandamos otra vez
-        if (timerms_left(&ecotimer) == 0 && ecoARP == 0) {
+        if (timerms_left(&timer) == 0 && ecoARP == 0) {
             eth_send(iface, MAC_BCAST_ADDR, ARP_TYPE, (unsigned char *) &arp_payload, sizeof(arp_message_t));
             ecoARP = 1;
             printf("Enviado eco arp request\n");
+            timerms_reset(&timer, ecotimeout);
         }
 
         //solo recibimos si el mensaje es del tipo arp reply
         int buffer_len = eth_recv(iface, mac, ARP_TYPE, buffer, sizeof(arp_message_t),
                                   timerms_left(&timer));
 
-        if (buffer_len == -1 || buffer_len == 0) {
+        if (buffer_len == -1 || (buffer_len == 0 && ecoARP==1)) {
             return buffer_len;
         }
         if (buffer_len < sizeof(arp_message_t)) {
             continue;
         }
         //eth_recv nos devuelve del tipo undefined char, asi que convertimos antes de copiar
-        memcpy(arp_message, (arp_message_t *) buffer, sizeof(arp_message_t));
+        arp_message = (arp_message_t *) buffer;
 
         //comprobamos que proviene de la ip que buscamos y ademas es arp reply
         //seguramente no necesitamos comprobar que el destino puesto que nos puede responder cualquier pc
