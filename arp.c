@@ -86,7 +86,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
 
         //comprobamos que proviene de la ip que buscamos y ademas es arp reply
         //seguramente no necesitamos comprobar que el destino puesto que nos puede responder cualquier pc
-        if (ntohs(arp_message->opcode) == ARP_REPLY && memc(arp_message->ip_sender, destino, IPv4_ADDR_SIZE) == 0) {
+        if (ntohs(arp_message->opcode) == ARP_REPLY && memcmp(arp_message->ip_sender, destino, IPv4_ADDR_SIZE) == 0) {
 
             memcpy(mac, arp_message->mac_sender, MAC_ADDR_SIZE);
             printf("ARP reply recibido\n");
