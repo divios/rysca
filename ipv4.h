@@ -6,13 +6,15 @@
 #define IPv4_ADDR_SIZE 4
 #define IPv4_STR_MAX_LENGTH 16
 
-typedef unsigned char ipv4_addr_t [IPv4_ADDR_SIZE];
+typedef unsigned char ipv4_addr_t[IPv4_ADDR_SIZE];
 
 /* Dirección IPv4 a cero "0.0.0.0" */
 extern ipv4_addr_t IPv4_ZERO_ADDR;
 
 /* Logitud máxmima del nombre de un interfaz de red */
 #define IFACE_NAME_MAX_LENGTH 32
+
+typedef struct ipv4_layer ipv4_layer_t;
 
 
 /* void ipv4_addr_str ( ipv4_addr_t addr, char* str );
@@ -26,7 +28,7 @@ extern ipv4_addr_t IPv4_ZERO_ADDR;
  *    'str': Memoria donde se desea almacenar la cadena de texto generada.
  *           Deben reservarse al menos 'IPv4_STR_MAX_LENGTH' bytes.
  */
-void ipv4_addr_str ( ipv4_addr_t addr, char* str );
+void ipv4_addr_str(ipv4_addr_t addr, char *str);
 
 
 /* int ipv4_str_addr ( char* str, ipv4_addr_t addr );
@@ -45,7 +47,7 @@ void ipv4_addr_str ( ipv4_addr_t addr, char* str );
  *   La función devuelve -1 si la cadena de texto no representaba una
  *   dirección IPv4.
  */
-int ipv4_str_addr ( char* str, ipv4_addr_t addr );
+int ipv4_str_addr(char *str, ipv4_addr_t addr);
 
 
 /*
@@ -61,7 +63,23 @@ int ipv4_str_addr ( char* str, ipv4_addr_t addr );
  * VALOR DEVUELTO:
  *   El valor del checksum calculado.
  */
-uint16_t ipv4_checksum ( unsigned char * data, int len );
+uint16_t ipv4_checksum(unsigned char *data, int len);
+
+
+ipv4_layer_t *ipv4_open(char *file_config, char *file_conf_route);
+
+
+//falta aqui el send
+
+int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ipv4_addr_t sender, int payload_len,
+              long int timeout);
+
+int ipv4_close(ipv4_layer_t *ipv4_layer);
 
 
 #endif /* _IPv4_H */
+
+
+
+
+
