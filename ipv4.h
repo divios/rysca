@@ -6,6 +6,13 @@
 #define IPv4_ADDR_SIZE 4
 #define IPv4_STR_MAX_LENGTH 16
 
+//Todos estos campos son para el frame de ipv4
+#define MRU 65535;
+#define IPV4_ADDRESS_FIELD 0xFF;
+#define IPV4_CONTROL_FIELD 0x33;
+#define IPV4_PROTOCOL 0x0021;
+#define IPV4_FRAME_LEN 1500;
+
 typedef unsigned char ipv4_addr_t[IPv4_ADDR_SIZE];
 
 /* Dirección IPv4 a cero "0.0.0.0" */
@@ -69,7 +76,7 @@ uint16_t ipv4_checksum(unsigned char *data, int len);
 ipv4_layer_t *ipv4_open(char *file_config, char *file_conf_route);
 
 
-//falta aqui el send
+int eth_send(eth_iface_t *iface, mac_addr_t dst, uint16_t type, unsigned char *payload, int payload_len);
 
 int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ipv4_addr_t sender, int payload_len,
               long int timeout);
