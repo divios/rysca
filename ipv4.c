@@ -24,12 +24,12 @@ ipv4_addr_t IPv4_ZERO_ADDR = {0, 0, 0, 0};
 //Estructura para la trama IPV4 (CONSULTAR)
 typedef struct ipv4_message {
 
-    uint8_t version: 45;
-    uint8_t type: 4;
-    uint16_t total_len: IPV4_FRAME_LEN;
+    uint8_t version;
+    uint8_t type;
+    uint16_t total_len;
     uint16_t id: 1;
     uint16_t flags_offset;
-    uint8_t TTL: 32;
+    uint8_t TTL;
     uint8_t protocol;
     uint16_t checksum;
     ipv4_addr_t source;
@@ -145,7 +145,7 @@ ipv4_layer_t *ipv4_open(char *file_config, char *file_conf_route) {
 
     //reservamos memoria para una routing table y guardamos
     //la tabla leida del archivo de texto en esta variable
-    ipv4_layer->routing_table = malloc(sizeof(ipv4_route_table_t));
+    ipv4_layer->routing_table = malloc(sizeof(IPv4_ROUTE_TABLE_SIZE));
     ipv4_route_table_read(file_conf_route, ipv4_layer->routing_table);
 
     //Finalmente abrimos a nivel eth con el nombre que nos pasaron
@@ -175,16 +175,17 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
     }
 
     //Miramos en las tablas el siguiente salto para llegar a dst
-    ipv4_route_t * next_jump = ipv4_route_table_lookup(layer->routing_table, dst);
+    ipv4_route_t *next_jump = malloc(sizeof(ipv4_route_t));
+    next_jump = ipv4_route_table_lookup(layer->routing_table, dst);
 
-    if (next_jump == "\0") {
+    if (next_jump->gateway_addr == NULL) {
         fprintf(stderr, "No hay ruta disponible para transmitir los datos.");
         return -1;
     }
         //Si nos devuelve 0.0.0.0, es que no hay siguiente salto y la ip esta en nuestra
         //subred, por lo tanto el siguiente salto es el propio dst
-    else if (memcmp(next_jump, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t) == 0)) {
-        next_jump = &dst;
+    else if (memcmp(next_jump->subnet_addr, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t) == 0)) {
+        memcpy(next_jump->gateway_addr, dst, sizeof(ipv4_addr_t));
     }
 
     mac_addr_t my_mac = "\0";
@@ -192,26 +193,25 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
 
     eth_getaddr(layer->iface, my_mac);
 
-    //eth_getaddr(m, my_mac);
-    /*IMPLEMENTAR CABECERA IP*/
+    /*CABECERA IP*/
 
-    ipv4_message_t *ipv4_data;
-    ipv4_data = malloc(sizeof(ipv4_datagram_t));
+    ipv4_message_t *ipv4_data = malloc(sizeof(ipv4_message_t));
 
     //RELLENAR TODOS LOS VALORES
-    ipv4_data->protocol = protocol;
+    memcpy(ipv4_data->protocol, htons(protocol), sizeof(uint8_t));
     memcpy(ipv4_data->dest, dst, sizeof(ipv4_addr_t));
     memcpy(ipv4_data->source, my_mac, sizeof(ipv4_addr_t));
     ipv4_data->checksum = ipv4_checksum(payload, payload_len);
-    strcpy(ipv4_data->data, payload);
+    memcpy(ipv4_data->data, payload, payload_len);
 
     //Mandamos ARP resolve para conocer la MAC del siguiente salto
-    if (arp_resolve(layer->iface, next_jump, your_mac)) {
+    if (arp_resolve(layer->iface, next_jump->gateway_addr, your_mac)) {
         //No hace falta mandar mensaje, ya lo hace arp_resolve
         return -1;
     }
 
-    if (eth_send(layer, your_mac, 0, (unsigned char *) ipv4_data, sizeof(ipv4_message_t))) { //hay que mirar el tipo
+    if (eth_send(layer->iface, your_mac, 0, (unsigned char *) ipv4_data,
+                 sizeof(ipv4_message_t))) { //hay que mirar el tipo
         fprintf(stderr, "No se puedo enviar la trama IPv4");
         return -1;
     }
@@ -232,7 +232,7 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
     int buffer_len;
 
     //creamos variables auxiliares
-    int ipv4_buffer_len = payload_len + ETH_HEADER_SIZE + IPV4_HEADER_SIZE;
+    int ipv4_buffer_len = payload_len;
     unsigned char ipv4_buffer[ipv4_buffer_len];
     ipv4_message_t *ipv4_frame = NULL;
 
@@ -253,7 +253,7 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
             //si por alguna razon el buffer que nos devuelve es menor que
             //la longitud minima que deberia tener un datagram, es decir la cabecera de ipv4
             //seguimos con la siguiente itineracion
-        else if (buffer_len < IPV4_HEADER_SIZE) {
+        else if (buffer_len < MRU) {
             printf("Tamaño de trama IPV4 invalida\n");
             continue;
         }
