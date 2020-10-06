@@ -1,21 +1,25 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <timerms.h>
 
-
-/* Dirección IPv4 a cero: "0.0.0.0" */
-ipv4_addr_t IPv4_ZERO_ADDR = {0, 0, 0, 0};
-
+#include "ipv4.h"
+#include "ipv4_route_table.h"
+#include "ipv4_config.h"
+#include "arp.h"
 
 //Estructura que guarda toda la informacion de la interfaz
 typedef struct ipv4_layer {
 
-    eth_iface *iface;
+    eth_iface_t *iface;
     ipv4_addr_t addr;
     ipv4_addr_t network;
-    ipv4_route_table *routing_table;
+    ipv4_route_table_t *routing_table;
 
 } ipv4_layer_t;
+
+/* Dirección IPv4 a cero: "0.0.0.0" */
+ipv4_addr_t IPv4_ZERO_ADDR = {0, 0, 0, 0};
 
 //Estructura para la trama IPV4 (CONSULTAR)
 typedef struct ipv4_message {
@@ -133,7 +137,7 @@ ipv4_layer_t *ipv4_open(char *file_config, char *file_conf_route) {
     //Reservamos memoria para el nombre de la interfaz y la struct
     //que guarda toda la informacion necesaria para la interfaz ipv4
     char ifname[IFACE_NAME_MAX_LENGTH];
-    ipv4_layer_t *ipv4_layer = (malloc(sizeof(ipv4_layer_t));
+    ipv4_layer_t *ipv4_layer = malloc(sizeof(ipv4_layer_t));
 
     //Leemos el fichero de config y guardamos el nombre de la interfaz, la ip y
     //la mascara asociadas a estas
@@ -141,11 +145,13 @@ ipv4_layer_t *ipv4_open(char *file_config, char *file_conf_route) {
 
     //reservamos memoria para una routing table y guardamos
     //la tabla leida del archivo de texto en esta variable
-    ipv4_layer->routing_table = malloc(sizeof(ipv4_route_table));
+    ipv4_layer->routing_table = malloc(sizeof(ipv4_route_table_t));
     ipv4_route_table_read(file_conf_route, ipv4_layer->routing_table);
 
     //Finalmente abrimos a nivel eth con el nombre que nos pasaron
     ipv4_layer->iface = eth_open(ifname);
+
+    return ipv4_layer;
 
 }
 
@@ -169,16 +175,16 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
     }
 
     //Miramos en las tablas el siguiente salto para llegar a dst
-    ipv4_route_t next_jump = ipv4_route_table_lookup(layer->routing_table, dst);
+    ipv4_route_t * next_jump = ipv4_route_table_lookup(layer->routing_table, dst);
 
-    if (next_jump == NULL) {
+    if (next_jump == "\0") {
         fprintf(stderr, "No hay ruta disponible para transmitir los datos.");
         return -1;
     }
         //Si nos devuelve 0.0.0.0, es que no hay siguiente salto y la ip esta en nuestra
         //subred, por lo tanto el siguiente salto es el propio dst
-    else if (next_jump == IPv4_ZERO_ADDR) {
-        next_jump == dst;
+    else if (memcmp(next_jump, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t) == 0)) {
+        next_jump = &dst;
     }
 
     mac_addr_t my_mac = "\0";
@@ -194,10 +200,10 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
 
     //RELLENAR TODOS LOS VALORES
     ipv4_data->protocol = protocol;
-    ipv4_data->dest = dst;
-    ipv4_data->source = my_mac;
+    memcpy(ipv4_data->dest, dst, sizeof(ipv4_addr_t));
+    memcpy(ipv4_data->source, my_mac, sizeof(ipv4_addr_t));
     ipv4_data->checksum = ipv4_checksum(payload, payload_len);
-    strcpy(ipv4_data->payload, payload);
+    strcpy(ipv4_data->data, payload);
 
     //Mandamos ARP resolve para conocer la MAC del siguiente salto
     if (arp_resolve(layer->iface, next_jump, your_mac)) {
@@ -223,7 +229,7 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
     timerms_reset(&timer, timeout);
 
     mac_addr_t mac;
-    int buffer_len = -1;
+    int buffer_len;
 
     //creamos variables auxiliares
     int ipv4_buffer_len = payload_len + ETH_HEADER_SIZE + IPV4_HEADER_SIZE;
@@ -258,10 +264,10 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
         //Aqui comprobamos que en el datagram IP sea del tipo que esperamos
         //si es asi, guardamos la payload->sender en sender
         //hacemos break;
-        if (!memcpr(ipv4_frame->protocol, protocol, sizeof(uint8_t))) {
+        if (!memcmp(ipv4_frame->protocol, protocol, sizeof(uint8_t))) {
             printf("Datagram Ip recibido");
-            memcpy(payload, ipv4_frame->payload, buffer_len);
-            memcpy(sender, ipv4_frame->sender, sizeof(ipv4_addr_t));
+            memcpy(payload, ipv4_frame->data, buffer_len);
+            memcpy(sender, ipv4_frame->source, sizeof(ipv4_addr_t));
             break;
         }
 

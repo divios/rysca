@@ -3,20 +3,16 @@
 
 #include <stdint.h>
 #include "eth.h"
-#include "arp.h"
-#include "ipv4.h"
-#include "ipv4_route_table.h"
-#include "ipv4_config.h"
 
 #define IPv4_ADDR_SIZE 4
 #define IPv4_STR_MAX_LENGTH 16
 
 //Todos estos campos son para el frame de ipv4
-#define MRU 1480;
-#define IPV4_ADDRESS_FIELD 0xFF;
-#define IPV4_CONTROL_FIELD 0x33;
-#define IPV4_PROTOCOL 0x0021;
-#define IPV4_FRAME_LEN 1500;
+#define MRU 1480
+#define IPV4_ADDRESS_FIELD 0xFF
+#define IPV4_CONTROL_FIELD 0x33
+#define IPV4_PROTOCOL 0x0021
+#define IPV4_FRAME_LEN 1500
 
 typedef unsigned char ipv4_addr_t[IPv4_ADDR_SIZE];
 
