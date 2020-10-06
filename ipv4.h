@@ -7,7 +7,7 @@
 #define IPv4_STR_MAX_LENGTH 16
 
 //Todos estos campos son para el frame de ipv4
-#define MRU 65535;
+#define MRU 1480;
 #define IPV4_ADDRESS_FIELD 0xFF;
 #define IPV4_CONTROL_FIELD 0x33;
 #define IPV4_PROTOCOL 0x0021;

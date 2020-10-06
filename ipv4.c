@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <timerms.h>
 #include "eth.h"
+#include "arp.h"
 
 /* Dirección IPv4 a cero: "0.0.0.0" */
 ipv4_addr_t IPv4_ZERO_ADDR = {0, 0, 0, 0};
@@ -21,17 +22,15 @@ typedef struct ipv4_layer {
 
 } ipv4_layer_t;
 
-
+//Estructura para la trama IPV4 (CONSULTAR)
 typedef struct ipv4_message {
 
-    uint4_t version: 4;
-    uint4_t hlen: 4;
-    uint8_t type;
-    uint16_t total_len;
-    uint4_t id;
-    uint4_t flags[3];
-    uint16_t offset: 13;
-    uint8_t TTL;
+    uint8_t version: 45;
+    uint8_t type: 4;
+    uint16_t total_len: IPV4_FRAME_LEN;
+    uint16_t id: 1;
+    uint16_t flags_offset;
+    uint8_t TTL: 32;
     uint8_t protocol;
     uint16_t checksum;
     ipv4_addr_t source;
@@ -199,8 +198,10 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
     ipv4_data = malloc(sizeof(ipv4_datagram_t));
 
     //RELLENAR TODOS LOS VALORES
+    ipv4_data->protocol = protocol;
     ipv4_data->dest = dst;
     ipv4_data->source = my_mac;
+    ipv4_data->checksum = ipv4_checksum(payload, payload_len);
     strcpy(ipv4_data->payload, payload);
 
     //Mandamos ARP resolve para conocer la MAC del siguiente salto
