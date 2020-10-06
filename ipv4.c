@@ -243,9 +243,13 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
 
         //Si es un error (-1) y si el tiempo se ha acabado sin recibir ningun mensaje (0), retornamos -1
         //Se puede distinguir entre las dos si queremos...
-        if (buffer_len == -1 || buffer_len == 0) {
+        if (buffer_len == -1) {
             printf("No se recibio el paquete");
             return -1;
+        }
+        else if (buffer_len == 0){
+            printf("TIMEOUT");
+            return 0;
         }
             //si por alguna razon el buffer que nos devuelve es menor que
             //la longitud minima que deberia tener un datagram, es decir la cabecera de ipv4
@@ -259,9 +263,9 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
         ipv4_frame = (ipv4_message_t *) ipv4_buffer;
 
         //Aqui comprobamos que en el datagram IP sea del tipo que esperamos
-        //si es asi, guardamos la payload->sender en sender
+        //y va dirigido a nuestra IP, si es asi, guardamos la payload->sender en sender
         //hacemos break;
-        if (ntohs(pv4_frame->protocol) == protocol) {
+        if (ntohs(ipv4_frame->protocol) == protocol && memcpy(ipv4_frame->dest, layer->addr, sizeof(ipv4_addr_t))) {
             printf("Datagram Ip recibido");
             memcpy(payload, ipv4_frame->data, buffer_len);
             memcpy(sender, ipv4_frame->source, sizeof(ipv4_addr_t));
