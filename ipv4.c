@@ -188,21 +188,20 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
         memcpy(next_jump->gateway_addr, dst, sizeof(ipv4_addr_t));
     }
 
-    mac_addr_t my_mac = "\0";
     mac_addr_t your_mac = "\0";
 
     eth_getaddr(layer->iface, my_mac);
 
     /*CABECERA IP*/
 
-    ipv4_message_t *ipv4_data = malloc(sizeof(ipv4_message_t));
+    ipv4_message_t ipv4_data;
 
     //RELLENAR TODOS LOS VALORES
-    memcpy(ipv4_data->protocol, htons(protocol), sizeof(uint8_t));
-    memcpy(ipv4_data->dest, dst, sizeof(ipv4_addr_t));
-    memcpy(ipv4_data->source, my_mac, sizeof(ipv4_addr_t));
-    ipv4_data->checksum = ipv4_checksum(payload, payload_len);
-    memcpy(ipv4_data->data, payload, payload_len);
+    ipv4_data.protocol = htons(protocol);
+    ipv4_data.dest = dst;
+    memcpy(ipv4_data.source, layer->addr, sizeof(ipv4_addr_t));
+    ipv4_data.checksum = ipv4_checksum(payload, payload_len);
+    memcpy(ipv4_data.data, payload, payload_len);
 
     //Mandamos ARP resolve para conocer la MAC del siguiente salto
     if (arp_resolve(layer->iface, next_jump->gateway_addr, your_mac)) {
@@ -210,7 +209,7 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
         return -1;
     }
 
-    if (eth_send(layer->iface, your_mac, 0, (unsigned char *) ipv4_data,
+    if (eth_send(layer->iface, your_mac, 0, (unsigned char *) &ipv4_data,
                  sizeof(ipv4_message_t))) { //hay que mirar el tipo
         fprintf(stderr, "No se puedo enviar la trama IPv4");
         return -1;
@@ -239,7 +238,7 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
     while (1) {
 
         //Miramos cuanto tiempo nos falta
-        long int time_left = timers_left(&timer);
+        long int time_left = timerms_left(&timer);
 
         //recibimos el mensaje
         buffer_len = eth_recv(layer->iface, mac, protocol, ipv4_buffer, payload_len, time_left);
