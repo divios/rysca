@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <timerms.h>
+#include <arpa/inet.h>
 
 #include "ipv4.h"
 #include "ipv4_route_table.h"
@@ -27,7 +27,7 @@ typedef struct ipv4_message {
     uint8_t version;
     uint8_t type;
     uint16_t total_len;
-    uint16_t id: 1;
+    uint16_t id;
     uint16_t flags_offset;
     uint8_t TTL;
     uint8_t protocol;
@@ -151,6 +151,7 @@ ipv4_layer_t *ipv4_open(char *file_config, char *file_conf_route) {
     ipv4_route_table_read(file_conf_route, ipv4_layer->routing_table);
 
     //Finalmente abrimos a nivel eth con el nombre que nos pasaron
+    printf("El nombre de la interfaz es %s", ifname);
     ipv4_layer->iface = eth_open(ifname);
 
     return ipv4_layer;

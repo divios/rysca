@@ -2,7 +2,6 @@
 #define _IPv4_H
 
 #include <stdint.h>
-#include "eth.h"
 
 #define IPv4_ADDR_SIZE 4
 #define IPv4_STR_MAX_LENGTH 16

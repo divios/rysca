@@ -1,5 +1,4 @@
 #include "arp.h"
-#include "eth.h"
 #include "ipv4.h"
 
 #include <stdio.h>

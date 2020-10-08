@@ -1,5 +1,13 @@
 #include "arp.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <libgen.h>
+#include <rawnet.h>
+#include <timerms.h>
+
 #define IP_PROTOCOL 0x0800 //especificamos protocolo ip
 #define HARDW_TYPE 0x0001 //especificamos que el hardware es eth
 

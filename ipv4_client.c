@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <unistd.h>
+#include <libgen.h>
+#include <rawnet.h>
 #include <timerms.h>
 
 #include "ipv4.h"
@@ -11,12 +13,10 @@ int main(int argc, char *argv[]) {
     //el nombre del archivo de text de la config y routas
     //y la ip al que se le debe enviar el mensaje
 
-    char *myself = basename(argv[0]);
     if ((argc <= 4) || (argc > 5)) {
-        printf("Uso: %s <iface> <config> <route_table> <ip> [<long>]\n", myself);
         printf("       <string.txt>: Nombre del archivo config.txt\n");
         printf("       <string.txt>: Nombre del archivo route_table.txt\n");
-        printf("        <protocol>: tipo del mensaje a enviar")
+        printf("        <protocol>: tipo del mensaje a enviar\n");
         printf("        <ip>: ip del pc del cual necesitas su MAC\n");
         exit(-1);
     }
@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 
     //comprobamos que la IP es valida
     ipv4_addr_t ip_addr;
-    if (ipv4_str_addr(ip_str, ip_addr) == 0) {
+    if (ipv4_str_addr(ip_str, ip_addr) != 0) {
         printf("Ip no valida\n");
         exit(-1);
     }
@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     ipv4_layer_t *ip_layer = ipv4_open(config_name, route_table_name);
 
     if (ip_layer == NULL) {
-        printf("No se pudo leer correctamente el fichero config.txt");
+        printf("No se pudo leer correctamente el fichero config.txt\n");
         exit(-1);
     }
 
