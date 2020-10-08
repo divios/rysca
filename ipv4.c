@@ -141,7 +141,9 @@ ipv4_layer_t *ipv4_open(char *file_config, char *file_conf_route) {
 
     //Leemos el fichero de config y guardamos el nombre de la interfaz, la ip y
     //la mascara asociadas a estas
-    ipv4_config_read(file_config, ifname, ipv4_layer->addr, ipv4_layer->network);
+    if (ipv4_config_read(file_config, ifname, ipv4_layer->addr, ipv4_layer->network) != 0) {
+        return NULL;
+    }
 
     //reservamos memoria para una routing table y guardamos
     //la tabla leida del archivo de texto en esta variable
@@ -252,8 +254,7 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
         if (buffer_len == -1) {
             printf("No se recibio el paquete");
             return -1;
-        }
-        else if (buffer_len == 0){
+        } else if (buffer_len == 0) {
             printf("TIMEOUT");
             return 0;
         }

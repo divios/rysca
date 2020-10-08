@@ -77,7 +77,7 @@ uint16_t ipv4_checksum(unsigned char *data, int len);
 ipv4_layer_t *ipv4_open(char *file_config, char *file_conf_route);
 
 
-int eth_send(eth_iface_t *iface, mac_addr_t dst, uint16_t type, unsigned char *payload, int payload_len);
+int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol, unsigned char *payload, int payload_len);
 
 int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ipv4_addr_t sender, int payload_len,
               long int timeout);
