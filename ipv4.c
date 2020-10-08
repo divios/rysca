@@ -195,10 +195,16 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
     ipv4_message_t ipv4_data;
 
     //RELLENAR TODOS LOS VALORES
+    ipv4_data.version = 45;
+    ipv4_data.type = 4;
+    ipv4_data.total_len = 1500;
+    ipv4_data.id = 1;
+    ipv4_data.flags_offset = 0;
+    ipv4_data.TTL = 32;
     ipv4_data.protocol = htons(protocol);
-    memcpy(ipv4_data.dest, dst, sizeof(ipv4_addr_t));
-    memcpy(ipv4_data.source, layer->addr, sizeof(ipv4_addr_t));
     ipv4_data.checksum = ipv4_checksum(payload, payload_len);
+    memcpy(ipv4_data.source, layer->addr, sizeof(ipv4_addr_t));
+    memcpy(ipv4_data.dest, dst, sizeof(ipv4_addr_t));
     memcpy(ipv4_data.data, payload, payload_len);
 
     //Mandamos ARP resolve para conocer la MAC del siguiente salto
