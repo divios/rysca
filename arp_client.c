@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     }
     mac_addr_t mac;
 
-    int resolve = arp_resolve(iface, ipv4_addr_dest, mac);
+    int resolve = arp_resolve(iface, IPv4_ZERO_ADDR, ipv4_addr_dest, mac);
 
     if (resolve == -2) {
         printf("No se pudo enviar el mensaje arp request\n");

@@ -7,6 +7,7 @@
 #include <libgen.h>
 #include <rawnet.h>
 #include <timerms.h>
+#include <arpa/inet.h>
 
 #define IP_PROTOCOL 0x0800 //especificamos protocolo ip
 #define HARDW_TYPE 0x0001 //especificamos que el hardware es eth
@@ -38,7 +39,7 @@ typedef struct arp_message {
 } arp_message_t;
 
 
-int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
+int arp_resolve(eth_iface_t *iface, ipv4_addr_t src, ipv4_addr_t destino, mac_addr_t mac) {
 
     //Creamos y rellenamos la estructura de tipo arp_message que se utilizara como payload
     arp_message_t arp_payload;
@@ -48,7 +49,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
     arp_payload.protocol_length = 4;
     arp_payload.opcode = htons(ARP_REQUEST); //1 request; 2 reply
     eth_getaddr(iface, arp_payload.mac_sender); //guardamos en mac_send la mac de la interfaz abierta
-    memcpy(arp_payload.ip_sender, IPv4_ZERO_ADDR,
+    memcpy(arp_payload.ip_sender, src,
            IPv4_ADDR_SIZE); //hastq que no implementemos la capa ip dejamos esto a 0
     memcpy(arp_payload.mac_target, UNKNOW_MAC, MAC_ADDR_SIZE); //En c la mejor forma de copiar arrays por ser
     memcpy(arp_payload.ip_target, destino, IPv4_ADDR_SIZE); //punteros es con memcpy
@@ -83,9 +84,17 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t destino, mac_addr_t mac) {
         int buffer_len = eth_recv(iface, mac, ARP_TYPE, buffer, sizeof(arp_message_t),
                                   timerms_left(&timer));
 
-        if (buffer_len == -1 || (buffer_len == 0 && ecoARP == 1)) {
+        if (buffer_len == -1) {  
+            printf("Se Produjo un fallo al enviar el ARP request\n");           
             return buffer_len;
-        }
+        } else if ((buffer_len == 0 && ecoARP == 1)) {
+
+            printf("Time out del ARP request\n");           
+            return buffer_len;
+          
+}
+        
+
         if (buffer_len < sizeof(arp_message_t)) {
             continue;
         }

@@ -22,6 +22,7 @@ extern ipv4_addr_t IPv4_ZERO_ADDR;
 #define IFACE_NAME_MAX_LENGTH 32
 
 typedef struct ipv4_layer ipv4_layer_t;
+typedef struct ipv4_message ipv4_message_t;
 
 
 /* void ipv4_addr_str ( ipv4_addr_t addr, char* str );
