@@ -8,10 +8,12 @@
 
 //Todos estos campos son para el frame de ipv4
 #define MRU 1480
-#define IPV4_ADDRESS_FIELD 0xFF
-#define IPV4_CONTROL_FIELD 0x33
-#define IPV4_PROTOCOL 0x0021
 #define IPV4_FRAME_LEN 1500
+#define IPV4_PROTOCOL 0x0800
+#define IPV4_VERSION 69
+#define IPV4_TYPE 4
+#define DEFAULT_TTL 32
+#define CHECKSUM_INIT 0x0000
 
 typedef unsigned char ipv4_addr_t[IPv4_ADDR_SIZE];
 
