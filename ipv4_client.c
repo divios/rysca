@@ -23,11 +23,23 @@ int main(int argc, char *argv[]) {
 
     //procesamos los argumentos
 
-    
+
     char *config_name = argv[1];
     char *route_table_name = argv[2];
+    char *ipv4t_ype_str = argv[3];
+    char *endptr;
+    /* El Tipo puede indicarse en hexadecimal (0x0800) o en decimal (2048) */
+    int ipv4_type_int = (int) strtol(eth_type_str, &endptr, 0);
+    if ((*endptr != '\0') || (eth_type_int < 0) || (eth_type_int > 0x0000FFFF)) {
+        fprintf(stderr, "%s: Tipo Ethernet incorrecto: '%s'\n",
+                myself, eth_type_str);
+        exit(-1);
+    }
+    uint16_t ipv4_protocol = (uint16_t) ipv4_type_int;
+
+
     char *ip_str = argv[4];
-    
+
     //comprobamos que la IP es valida
     ipv4_addr_t ip_addr;
     if (ipv4_str_addr(ip_str, ip_addr) != 0) {
@@ -35,28 +47,27 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
-    
+
     //Abrimos la interfaz y comprobamos que se leyo el archivo;
     ipv4_layer_t *ip_layer = ipv4_open(config_name, route_table_name);
-    
+
     if (ip_layer == NULL) {
         printf("No se pudo leer correctamente el fichero config.txt\n");
         exit(-1);
     }
-    
-    
+
+
     //rellenamos el payload de numeros aleatorios
 
     unsigned char payload[MRU];
     int i;
     for (i = 0; i < MRU; i++) {
         payload[i] = (unsigned char) i;
-    }
-    ;
+    };
 
     //mandamos el mensaje, Que protocolo?
-    
-    if (ipv4_send(ip_layer, ip_addr, 0x45, payload, sizeof(payload)) == -1) {
+
+    if (ipv4_send(ip_layer, ip_addr, ipv4_protocol, payload, sizeof(payload)) == -1) {
         printf("No se pudo enviar el paquete\n");
         exit(-1);
     }
@@ -71,14 +82,12 @@ int main(int argc, char *argv[]) {
     if (payload_len == -1) {
         printf("Error al recibir la trama\n");
         exit(-1);
-    }
-
-    else if (payload_len > 0) {
+    } else if (payload_len > 0) {
         printf("Recibido el paquete\n");
-        
+
     }
 
     ipv4_close(ip_layer);
     exit(-1);
-    
+
 }
