@@ -31,8 +31,7 @@ int main(int argc, char *argv[]) {
     /* El Tipo puede indicarse en hexadecimal (0x0800) o en decimal (2048) */
     int ipv4_type_int = (int) strtol(ipv4_type_str, &endptr, 0);
     if ((*endptr != '\0') || (ipv4_type_int < 0) || (ipv4_type_int > 0x0000FFFF)) {
-        fprintf(stderr, "%s: Tipo Ethernet incorrecto: '%s'\n",
-                myself, eth_type_str);
+        printf("Error en el argumento protocol\n");
         exit(-1);
     }
     uint16_t ipv4_protocol = (uint16_t) ipv4_type_int;

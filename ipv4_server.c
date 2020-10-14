@@ -27,13 +27,12 @@ int main(int argc, char *argv[]) {
     char *route_table_name = argv[2];
 
     //Procesamos el argumento protocol y comprobamos que esta bien
-    char *ipv4t_ype_str = argv[3];
+    char *ipv4_type_str = argv[3];
     char *endptr;
     /* El Tipo puede indicarse en hexadecimal (0x0800) o en decimal (2048) */
-    int ipv4_type_int = (int) strtol(eth_type_str, &endptr, 0);
-    if ((*endptr != '\0') || (eth_type_int < 0) || (eth_type_int > 0x0000FFFF)) {
-        fprintf(stderr, "%s: Tipo Ethernet incorrecto: '%s'\n",
-                myself, eth_type_str);
+    int ipv4_type_int = (int) strtol(ipv4_type_str, &endptr, 0);
+    if ((*endptr != '\0') || (ipv4_type_int < 0) || (ipv4_type_int > 0x0000FFFF)) {
+        printf("Error en el argumento protocol\n");
         exit(-1);
     }
     uint16_t ipv4_protocol = (uint16_t) ipv4_type_int;
