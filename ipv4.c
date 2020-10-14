@@ -189,7 +189,7 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
     }
         //Si nos devuelve 0.0.0.0, es que no hay siguiente salto y la ip esta en nuestra
         //subred, por lo tanto el siguiente salto es el propio dst
-    else if (memcmp(next_jump->gateway_addr, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t) == 0)) {
+    else if (memcmp(next_jump->gateway_addr, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t)) == 0) {
         printf("El siguiente salto es el propio destino\n");
         memcpy(next_jump->gateway_addr, dst, sizeof(ipv4_addr_t));
     }
@@ -244,7 +244,7 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
     int buffer_len;
 
     //creamos variables auxiliares
-    int ipv4_buffer_len = payload_len + 20;
+    int ipv4_buffer_len = payload_len + IPV4_HEADER_SIZE;
     unsigned char ipv4_buffer[ipv4_buffer_len];
     ipv4_message_t *ipv4_frame = NULL;
 
@@ -268,7 +268,7 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
             //si por alguna razon el buffer que nos devuelve es menor que
             //la longitud minima que deberia tener un datagram, es decir la cabecera de ipv4
             //seguimos con la siguiente itineracion
-        else if (buffer_len < MRU) {
+        else if (buffer_len < IPV4_HEADER_SIZE) {
             printf("Tamaño de trama IPV4 invalida\n");
             continue;
         }
@@ -283,7 +283,7 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
             memcpy(payload, ipv4_frame->data, buffer_len);
             memcpy(sender, ipv4_frame->source, sizeof(ipv4_addr_t));
             break;
-        } else { printf("Datagrama no recibido\n"); }
+        }
 
     }
 
