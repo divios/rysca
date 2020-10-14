@@ -89,27 +89,17 @@ int switch_lookup(unsigned char mask) {
  */
 int ipv4_route_lookup(ipv4_route_t *route, ipv4_addr_t addr) {
     int prefix_length = 0;
-    
-    char addr_str[IPv4_STR_MAX_LENGTH];
-    char route_str[IPv4_STR_MAX_LENGTH];
-
-    ipv4_addr_str(addr, addr_str);
-    ipv4_addr_str(route->subnet_addr, route_str);
 
     //recorremos los 4 octetos
     for (int i = 0; i < 4; i++) {
-
         //si en algun momento la ip a buscar con la mascara aplicada no es
         //igual a la ip de la subred paramos y retornamos -1
-        
         if ((addr[i] & route->subnet_mask[i]) != route->subnet_addr[i]) {
             return -1;
         }
         //contamos a la vez el numero de 1s cada octeto de la mascara
         prefix_length += switch_lookup(route->subnet_mask[i]);
     }
-
-
     return prefix_length;
 }
 
