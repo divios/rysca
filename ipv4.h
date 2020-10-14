@@ -14,6 +14,7 @@
 #define IPV4_PROTOCOL 0x0800
 #define IPV4_VERSION 69
 #define IPV4_TYPE 4
+#define IPV4_HEADER_SIZE 20
 
 typedef unsigned char ipv4_addr_t[IPv4_ADDR_SIZE];
 
