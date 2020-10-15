@@ -34,9 +34,11 @@ typedef struct udp_packet {
 
 udp_layer_t *upd_open(char *file_config, char *ip_config, char *route_config);
 
-
 int udp_send(udp_layer_t *layer, ipv4_addr_t dst, uint16_t protocol, unsigned char data[], int payload_len);
 
+int udp_recv(udp_layer_t *layer,long int timeout, uint8_t protocol, char * payload, int payload_len);
+
+void udp_close(udp_layer_t *my_layer);
 
 #endif //RYSCA_UDP_H
 
