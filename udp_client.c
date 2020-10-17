@@ -15,8 +15,7 @@ int main(int argc, char *argv[]) {
     //el nombre del archivo de text de la config y routas
     //y la ip al que se le debe enviar el mensaje
 
-    if ((argc <= 4) || (argc > 5)) {
-        printf("       <string.txt>: Nombre del archivo udp_config.txt\n");
+    if ((argc <= 3) || (argc > 4)) {;
         printf("       <string.txt>: Nombre del archivo config.txt\n");
         printf("       <string.txt>: Nombre del archivo route_table.txt\n");
         printf("        <ip>: ip del pc del cual necesitas su MAC\n");
@@ -25,10 +24,9 @@ int main(int argc, char *argv[]) {
 
     //procesamos los argumentos
 
-    char *udp_config_name = argv[1];
-    char *config_name = argv[2];
-    char *route_table_name = argv[3];
-    char *ip_str = argv[4];
+    char *config_name = argv[1];
+    char *route_table_name = argv[2];
+    char *ip_str = argv[3];
 
     //comprobamos que la IP es valida
     ipv4_addr_t ip_addr;
@@ -36,25 +34,25 @@ int main(int argc, char *argv[]) {
         printf("Ip no valida\n");
         exit(-1);
     }
-
-    udp_layer_t *udp_layer = upd_open(udp_config_name, config_name, route_table_name);
-
+    
+    udp_layer_t *udp_layer = upd_open(1478, 327, config_name, route_table_name);
     if (udp_layer == NULL) {
         printf("Fallo al abrir la interfaz");
         exit(-1);
     }
-
-    unsigned char payload[MRU];
+    
+    unsigned char payload[1472];
     int i;
-    for (i = 0; i < MRU; i++) {
+    for (i = 0; i < 1472; i++) {
         payload[i] = (unsigned char) i;
     };
 
-    printf("Enviando paquete");
+    printf("Enviando paquete\n");
     if (udp_send(udp_layer, ip_addr, UDP_PROTOCOL, payload, sizeof(payload)) == -1) {
-        printf("No se pudo enviar");
+        printf("No se pudo enviar\n");
         exit(-1);
     }
-
+    
+    udp_close(udp_layer);
 
 }

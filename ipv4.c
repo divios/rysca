@@ -179,7 +179,6 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
     }
 
     //Miramos en las tablas el siguiente salto para llegar a dst
-
     ipv4_route_t *next_jump = ipv4_route_table_lookup(layer->routing_table, dst);
 
 
@@ -193,7 +192,6 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
         printf("El siguiente salto es el propio destino\n");
         memcpy(next_jump->gateway_addr, dst, sizeof(ipv4_addr_t));
     }
-
     mac_addr_t your_mac = "\0";
 
     /*CABECERA IP*/
@@ -214,20 +212,16 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
     ipv4_data.checksum = htons(ipv4_checksum((unsigned char *) &ipv4_data, 20));
 
     memcpy(ipv4_data.data, payload, payload_len);
-
     //Mandamos ARP resolve para conocer la MAC del siguiente salto
     if (arp_resolve(layer->iface, layer->addr, next_jump->gateway_addr, your_mac) <= 0) {
         //No hace falta mandar mensaje, ya lo hace arp_resolve
         return -1;
     }
-
-
     if (eth_send(layer->iface, your_mac, IPV4_PROTOCOL, (unsigned char *) &ipv4_data,
                  20 + payload_len) == -1) { //hay que mirar el tipo
         fprintf(stderr, "No se puedo enviar la trama IPv4\n");
         return -1;
     }
-
     return 1;
 }
 
@@ -259,10 +253,10 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
         //Si es un error (-1) y si el tiempo se ha acabado sin recibir ningun mensaje (0), retornamos -1
         //Se puede distinguir entre las dos si queremos...
         if (buffer_len == -1) {
-            printf("No se recibio el paquete");
+            printf("No se recibio el paquete\n");
             return -1;
         } else if (buffer_len == 0) {
-            printf("TIMEOUT");
+            printf("TIMEOUT\n");
             return 0;
         }
             //si por alguna razon el buffer que nos devuelve es menor que
