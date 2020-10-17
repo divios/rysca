@@ -89,38 +89,39 @@ udp_layer_t *upd_open(uint16_t src_port, uint16_t dst_port, char *ip_config, cha
 }
 
 
-int udp_send(udp_layer_t *layer, ipv4_addr_t dst, uint16_t protocol, unsigned char data[], int payload_len) {
+int udp_send(udp_layer_t *layer, ipv4_addr_t dst, uint16_t protocol, unsigned char payload[], int payload_len) {
 
     if (layer == NULL) {
         printf("Hubo un fallo al inicializar el UDP layer\n");
         return -1;
     }
 
-    if (payload_len == 0 || payload_len < 0) {
+    if (payload_len <= 0) {
         printf("Payload de UDP no valido\n");
         return -1;
     }
 
     //Rellenamos paquete
-    udp_packet_t packet;
-    printf("Hasta aqui bien\n");
-    packet.src_port = htons(layer->source_port); //suponiendo que se hace un htons ya en el open
-    packet.dst_port = htons(layer->destination_port); //suponiendo que se hace un htons ya en el open
-    packet.checksum= 0x000;
-    int packet_len_to_send = UDP_HEADER_LEN + payload_len; // se podria hacer un sizeof directamente pero queda mas
-    packet.len = htons(packet_len_to_send);
-    memcpy(packet.payload, (unsigned char *) data, payload_len);
+    udp_packet_t udp_frame;
+    udp_frame.src_port = htons(layer->source_port);
+    udp_frame.dst_port = htons(layer->destination_port);
+    udp_frame.checksum = 0x000;
+    int udp_frame_len = UDP_HEADER_LEN + payload_len;
+    udp_frame.len = htons(packet_len_to_send);
+    memcpy(udp_frame.payload, (unsigned char *) payload, payload_len);
 
-    
+
     //bonito asi parece ser
-    if (ipv4_send(layer->ipv4_layer, dst, protocol, (unsigned char *) &packet, packet_len_to_send) == -1) {
+    int bytes_send = ipv4_send(layer->ipv4_layer, dst, protocol, (unsigned char *) &udp_frame, udp_frame_len);
+
+    if (bytes_send == -1) {
         //ya manda el warning el ipv4_send, no hace falta hacer printf
         return -1;
     }
-       return 1;
+    return (bytes_send - UDP_HEADER_LEN);
 }
 
-int udp_recv(udp_layer_t *layer,long int timeout, uint8_t protocol, unsigned char * payload, int payload_len){
+int udp_recv(udp_layer_t *layer, long int timeout, uint8_t protocol, unsigned char *buffer, int buffer_len) {
 
     //check_parametros_correctos()
     if (layer == NULL) {
@@ -128,37 +129,46 @@ int udp_recv(udp_layer_t *layer,long int timeout, uint8_t protocol, unsigned cha
         return -1;
     }
 
-    if (payload_len == 0 || payload_len < 0) {
+    if (buffer_len <= 0) {
         printf("Payload de UDP erróneo. \n");
         return -1;
     }
-
 
     //crear_variable_timer()
     timerms_t timer_udp;
     timerms_reset(&timer_udp, timeout);
 
     ipv4_addr_t sender;
-    unsigned char buffer[1472 + 8];
+    udp_packet_t *udp_frame = NULL;
+    int frame_len;
+    int udp_buffer_len = payload_len + UDP_HEADER_LEN;
+    unsigned char udp_buffer[buffer_len];
 
     while (1) {
         //escuchar_puerto()
         long int time_left = timerms_left(&timer_udp);
 
-        if (ipv4_recv(layer->ipv4_layer, protocol, buffer, sender, sizeof(buffer), time_left) == -1) {
+        frame_len = ipv4_recv(layer->ipv4_layer, protocol, udp_buffer, sender, udp_buffer_len, time_left);
+
+        if (frame_len == -1) {
             printf("Error al recibir el datagrama.\n");
             return -1;
         }
-        udp_packet_t * udp_data = NULL;
-        udp_data = (udp_packet_t *) buffer;
-        
-        if (ntohs(udp_data->dst_port) == layer->source_port) { 
-            memcpy(payload, udp_data->payload, 1472); 
-            printf("Recibido datgrama UDP\n");
-            return 1;
-        }else{printf("Vaia\n");}
+
+        udp_frame = (udp_packet_t *) udp_buffer;
+
+        if (ntohs(udp_frame->dst_port) == layer->source_port) {
+            break;
+        }
     }
 
+    if (buffer_len > udp_frame) {
+        buffer_len = udp_frame;
+    }
+
+    memcpy(payload, udp_data->payload, buffer_len);
+
+    return 1;
 
 }
 

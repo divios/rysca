@@ -41,9 +41,9 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
     
-    unsigned char payload[1472];
+    unsigned char payload[UDP_PACKET_LEN];
     int i;
-    for (i = 0; i < 1472; i++) {
+    for (i = 0; i < UDP_PACKET_LEN; i++) {
         payload[i] = (unsigned char) i;
     };
 

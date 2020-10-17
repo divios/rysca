@@ -169,7 +169,7 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
         return -1;
     }
     /*Ver cómo usar protocol para cifrar el protocolo*/
-    if (sizeof(payload) == 0) {
+    if (payload_len == 0) {
         fprintf(stderr, "Error en el envío de datos.\n");
         return -1;
     }
@@ -196,37 +196,39 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
 
     /*CABECERA IP*/
 
-    ipv4_message_t ipv4_data;
+    ipv4_message_t ipv4_frame;
+    int ipv4_frame_len = payload_len + IPV4_HEADER_SIZE;
 
     //RELLENAR TODOS LOS VALORES
-    ipv4_data.version = IPV4_VERSION;
-    ipv4_data.type = IPV4_TYPE;
-    ipv4_data.total_len = htons(IPV4_FRAME_LEN);
-    ipv4_data.id = htons(1);
-    ipv4_data.flags_offset = 0;
-    ipv4_data.TTL = IPV4_DEFAULT_TTL;
-    ipv4_data.protocol = protocol;
-    ipv4_data.checksum = IPV4_CHECKSUM_INIT;
-    memcpy(ipv4_data.source, layer->addr, sizeof(ipv4_addr_t));
-    memcpy(ipv4_data.dest, dst, sizeof(ipv4_addr_t));
-    ipv4_data.checksum = htons(ipv4_checksum((unsigned char *) &ipv4_data, 20));
+    ipv4_frame.version = IPV4_VERSION;
+    ipv4_frame.type = IPV4_TYPE;
+    ipv4_frame.total_len = htons(IPV4_FRAME_LEN);
+    ipv4_frame.id = htons(1);
+    ipv4_frame.flags_offset = 0;
+    ipv4_frame.TTL = IPV4_DEFAULT_TTL;
+    ipv4_frame.protocol = protocol;
+    ipv4_frame.checksum = IPV4_CHECKSUM_INIT;
+    memcpy(ipv4_frame.source, layer->addr, sizeof(ipv4_addr_t));
+    memcpy(ipv4_frame.dest, dst, sizeof(ipv4_addr_t));
+    ipv4_frame.checksum = htons(ipv4_checksum((unsigned char *) &ipv4_data, IPV4_HEADER_SIZE));
 
-    memcpy(ipv4_data.data, payload, payload_len);
+    memcpy(ipv4_frame.data, payload, payload_len);
     //Mandamos ARP resolve para conocer la MAC del siguiente salto
     if (arp_resolve(layer->iface, layer->addr, next_jump->gateway_addr, your_mac) <= 0) {
         //No hace falta mandar mensaje, ya lo hace arp_resolve
         return -1;
     }
-    if (eth_send(layer->iface, your_mac, IPV4_PROTOCOL, (unsigned char *) &ipv4_data,
-                 20 + payload_len) == -1) { //hay que mirar el tipo
-        fprintf(stderr, "No se puedo enviar la trama IPv4\n");
+    int bytes_send = eth_send(layer->iface, your_mac, IPV4_PROTOCOL, (unsigned char *) &ipv4_frame,
+                           ipv4_frame_len);
+    if (bytes_send == -1){
+        printf("Problema al enviar los datos ipv4\n");
         return -1;
     }
-    return 1;
+    return (bytes_send - IPV4_HEADER_SIZE);
 }
 
 
-int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ipv4_addr_t sender, int payload_len,
+int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char buffer[], ipv4_addr_t sender, int buffer_len,
               long int timeout) {
 
     //inicializamos variables
@@ -235,7 +237,7 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
     timerms_reset(&timer, timeout);
 
     mac_addr_t mac;
-    int buffer_len;
+    int frame_len;
 
     //creamos variables auxiliares
     int ipv4_buffer_len = payload_len + IPV4_HEADER_SIZE;
@@ -248,21 +250,21 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
         long int time_left = timerms_left(&timer);
 
         //recibimos el mensaje
-        buffer_len = eth_recv(layer->iface, mac, IPV4_PROTOCOL, ipv4_buffer, payload_len, time_left);
+        frame_len = eth_recv(layer->iface, mac, IPV4_PROTOCOL, ipv4_buffer, ipv4_buffer_len, time_left);
 
         //Si es un error (-1) y si el tiempo se ha acabado sin recibir ningun mensaje (0), retornamos -1
         //Se puede distinguir entre las dos si queremos...
-        if (buffer_len == -1) {
+        if (frame_len == -1) {
             printf("No se recibio el paquete\n");
             return -1;
-        } else if (buffer_len == 0) {
+        } else if (frame_len == 0) {
             printf("TIMEOUT\n");
             return 0;
         }
             //si por alguna razon el buffer que nos devuelve es menor que
             //la longitud minima que deberia tener un datagram, es decir la cabecera de ipv4
             //seguimos con la siguiente itineracion
-        else if (buffer_len < IPV4_HEADER_SIZE) {
+        else if (frame_len < IPV4_HEADER_SIZE) {
             printf("Tamaño de trama IPV4 invalida\n");
             continue;
         }
@@ -274,14 +276,19 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
         //y va dirigido a nuestra IP, si es asi, guardamos la payload->sender en sender
         //hacemos break;
         if (ipv4_frame->protocol == protocol && (memcmp(ipv4_frame->dest, layer->addr, sizeof(ipv4_addr_t)) == 0)) {
-            memcpy(payload, ipv4_frame->data, buffer_len);
-            memcpy(sender, ipv4_frame->source, sizeof(ipv4_addr_t));
             break;
         }
 
     }
 
-    return buffer_len;
+    memcpy(sender, ipv4_frame->source, sizeof(ipv4_addr_t));
+    int payload_len = frame_len - IPV4_HEADER_SIZE;
+    if (buffer_len > payload_len) {
+        buffer_len = payload_len;
+    }
+    memcpy(buffer, ipv4_frame->data, buffer_len);
+
+    return payload_len;
 
 }
 

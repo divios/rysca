@@ -8,7 +8,8 @@
 #include "ipv4.h"
 
 //Variables para paquete UDP
-#define UDP_PROTOCOL 0x11 
+#define UDP_PROTOCOL 0x11
+#define UDP_PACKET_LEN 1478
 #define UDP_HEADER_LEN 8 
 #define ERROR 001
 
@@ -26,7 +27,7 @@ typedef struct udp_packet {
     uint16_t dst_port;
     uint16_t len;
     uint16_t checksum;
-    unsigned char payload[1472];
+    unsigned char payload[UDP_PACKET_LEN];
 } udp_packet_t;
 
 

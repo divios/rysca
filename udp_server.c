@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
-    unsigned char buffer[1480];
+    unsigned char buffer[UDP_PACKET_LEN];
     ipv4_addr_t src_addr;
 
     while (1) {
@@ -44,8 +44,8 @@ int main(int argc, char *argv[]) {
 
         long int timeout = -1;
 
-        printf("Escuchando a tramas ipv4\n");
-        int payload_len = udp_recv(udp_layer, timeout, 0x11, buffer, 1480);
+        printf("Escuchando a tramas udp\n");
+        int payload_len = udp_recv(udp_layer, timeout, UDP_PROTOCOL, buffer, sizeof(buffer));
 
         if (payload_len == -1) {
             printf("Error al recibir la trama\n");
