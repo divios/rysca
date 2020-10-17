@@ -202,7 +202,7 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
     //RELLENAR TODOS LOS VALORES
     ipv4_frame.version = IPV4_VERSION;
     ipv4_frame.type = IPV4_TYPE;
-    ipv4_frame.total_len = htons(IPV4_FRAME_LEN);
+    ipv4_frame.total_len = htons(ipv4_frame_len);
     ipv4_frame.id = htons(1);
     ipv4_frame.flags_offset = 0;
     ipv4_frame.TTL = IPV4_DEFAULT_TTL;
@@ -210,7 +210,7 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
     ipv4_frame.checksum = IPV4_CHECKSUM_INIT;
     memcpy(ipv4_frame.source, layer->addr, sizeof(ipv4_addr_t));
     memcpy(ipv4_frame.dest, dst, sizeof(ipv4_addr_t));
-    ipv4_frame.checksum = htons(ipv4_checksum((unsigned char *) &ipv4_data, IPV4_HEADER_SIZE));
+    ipv4_frame.checksum = htons(ipv4_checksum((unsigned char *) &ipv4_frame, IPV4_HEADER_SIZE));
 
     memcpy(ipv4_frame.data, payload, payload_len);
     //Mandamos ARP resolve para conocer la MAC del siguiente salto
@@ -240,7 +240,7 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char buffer[], ipv
     int frame_len;
 
     //creamos variables auxiliares
-    int ipv4_buffer_len = payload_len + IPV4_HEADER_SIZE;
+    int ipv4_buffer_len = buffer_len + IPV4_HEADER_SIZE;
     unsigned char ipv4_buffer[ipv4_buffer_len];
     ipv4_message_t *ipv4_frame = NULL;
 

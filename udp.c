@@ -107,7 +107,7 @@ int udp_send(udp_layer_t *layer, ipv4_addr_t dst, uint16_t protocol, unsigned ch
     udp_frame.dst_port = htons(layer->destination_port);
     udp_frame.checksum = 0x000;
     int udp_frame_len = UDP_HEADER_LEN + payload_len;
-    udp_frame.len = htons(packet_len_to_send);
+    udp_frame.len = htons(udp_frame_len);
     memcpy(udp_frame.payload, (unsigned char *) payload, payload_len);
 
 
@@ -141,7 +141,7 @@ int udp_recv(udp_layer_t *layer, long int timeout, uint8_t protocol, unsigned ch
     ipv4_addr_t sender;
     udp_packet_t *udp_frame = NULL;
     int frame_len;
-    int udp_buffer_len = payload_len + UDP_HEADER_LEN;
+    int udp_buffer_len = buffer_len + UDP_HEADER_LEN;
     unsigned char udp_buffer[buffer_len];
 
     while (1) {
@@ -162,11 +162,11 @@ int udp_recv(udp_layer_t *layer, long int timeout, uint8_t protocol, unsigned ch
         }
     }
 
-    if (buffer_len > udp_frame) {
-        buffer_len = udp_frame;
+    if (buffer_len > frame_len) {
+        buffer_len = frame_len;
     }
 
-    memcpy(payload, udp_data->payload, buffer_len);
+    memcpy(buffer, udp_frame->payload, buffer_len);
 
     return 1;
 

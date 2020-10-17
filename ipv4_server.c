@@ -45,8 +45,9 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
-    unsigned char buffer[MRU];
+    unsigned char buffer[IPV4_FRAME_LEN];
     ipv4_addr_t src_addr;
+    int payload_len;
 
     while (1) {
 
@@ -55,7 +56,7 @@ int main(int argc, char *argv[]) {
         long int timeout = -1;
 
         printf("Escuchando a tramas ipv4\n");
-        int payload_len = ipv4_recv(ip_layer, ipv4_protocol, buffer, src_addr, MRU, timeout);
+        payload_len = ipv4_recv(ip_layer, ipv4_protocol, buffer, src_addr, MRU, timeout);
 
         if (payload_len == -1) {
             printf("Error al recibir la trama\n");
@@ -69,13 +70,7 @@ int main(int argc, char *argv[]) {
 
     printf("Enviando datos de vuelta\n");
 
-    unsigned char payload[MRU];
-    int i;
-    for (i = 0; i < MRU; i++) {
-        payload[i] = (unsigned char) i;
-    }
-
-    ipv4_send(ip_layer, src_addr, 0x45, payload, sizeof(payload));
+    ipv4_send(ip_layer, src_addr, ipv4_protocol, buffer, payload_len);
 
     ipv4_close(ip_layer);
 }

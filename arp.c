@@ -42,23 +42,19 @@ typedef struct arp_message {
 int arp_resolve(eth_iface_t *iface, ipv4_addr_t src, ipv4_addr_t destino, mac_addr_t mac) {
 
     //Creamos y rellenamos la estructura de tipo arp_message que se utilizara como payload
-    printf("Hasta aqui bien3.1\n");
     arp_message_t arp_payload;
     arp_payload.hard_addr = htons(HARDW_TYPE);// correspondiente a eth
     arp_payload.protocol_type = htons(IP_PROTOCOL); //correspondiente a ip
     arp_payload.hard_size = 6;//pq eth tiene 6 octetos
     arp_payload.protocol_length = 4;
-    printf("Hasta aqui bien3.5\n");
     arp_payload.opcode = htons(ARP_REQUEST); //1 request; 2 reply
     eth_getaddr(iface, arp_payload.mac_sender); //guardamos en mac_send la mac de la interfaz abierta
     memcpy(arp_payload.ip_sender, src,
            IPv4_ADDR_SIZE); //hastq que no implementemos la capa ip dejamos esto a 0
-    printf("Hasta aqui bien3.4\n");
     memcpy(arp_payload.mac_target, UNKNOW_MAC, MAC_ADDR_SIZE); //En c la mejor forma de copiar arrays por ser
-    printf("Hasta aqui bien3.45\n");
     memcpy(arp_payload.ip_target, destino, IPv4_ADDR_SIZE); //punteros es con memcpy
     //enviamos en broadcast un arp request
-        printf("Hasta aqui bien3.46\n");
+
     if (eth_send(iface, MAC_BCAST_ADDR, ARP_TYPE, (unsigned char *) &arp_payload, sizeof(arp_payload)) ==
         -1) {
         return -2; //si no se ha podido enviar retornamos -2

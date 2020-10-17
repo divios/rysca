@@ -9,7 +9,7 @@
 
 //Variables para paquete UDP
 #define UDP_PROTOCOL 0x11
-#define UDP_PACKET_LEN 1478
+#define UDP_PACKET_LEN 1472
 #define UDP_HEADER_LEN 8 
 #define ERROR 001
 
