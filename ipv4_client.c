@@ -13,11 +13,12 @@ int main(int argc, char *argv[]) {
     //el nombre del archivo de text de la config y routas
     //y la ip al que se le debe enviar el mensaje
 
-    if ((argc <= 4) || (argc > 5)) {
+    if ((argc <= 5) || (argc > 6)) {
         printf("       <string.txt>: Nombre del archivo config.txt\n");
         printf("       <string.txt>: Nombre del archivo route_table.txt\n");
         printf("        <protocol>: tipo del mensaje a enviar\n");
         printf("        <ip>: ip del pc del cual necesitas su MAC\n");
+        printf("        <int>: bytes a mandar\n");
         exit(-1);
     }
 
@@ -45,7 +46,14 @@ int main(int argc, char *argv[]) {
         printf("Ip no valida\n");
         exit(-1);
     }
-
+    
+    char *payload_len_str = argv[5];
+    int payload_len_input = atoi(payload_len_str);
+    
+    if (payload_len_input > MRU){
+        printf("Longitud del argumento payload demasiado larga\n");
+        exit(-1);
+    }
 
     //Abrimos la interfaz y comprobamos que se leyo el archivo;
     ipv4_layer_t *ip_layer = ipv4_open(config_name, route_table_name);
@@ -58,15 +66,15 @@ int main(int argc, char *argv[]) {
 
     //rellenamos el payload de numeros aleatorios
 
-    unsigned char payload[MRU];
+    unsigned char payload[payload_len_input];
     int i;
-    for (i = 0; i < MRU; i++) {
+    for (i = 0; i < payload_len_input; i++) {
         payload[i] = (unsigned char) i;
     };
 
     //mandamos el mensaje, Que protocolo?
 
-    if (ipv4_send(ip_layer, ip_addr, ipv4_protocol, payload, sizeof(payload)) == -1) {
+    if (ipv4_send(ip_layer, ip_addr, ipv4_protocol, payload, payload_len_input) == -1) {
         printf("No se pudo enviar el paquete\n");
         exit(-1);
     }

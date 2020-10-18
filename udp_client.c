@@ -15,10 +15,11 @@ int main(int argc, char *argv[]) {
     //el nombre del archivo de text de la config y routas
     //y la ip al que se le debe enviar el mensaje
 
-    if ((argc <= 3) || (argc > 4)) {;
+    if ((argc <= 4) || (argc > 5)) {;
         printf("       <string.txt>: Nombre del archivo config.txt\n");
         printf("       <string.txt>: Nombre del archivo route_table.txt\n");
         printf("        <ip>: ip del pc del cual necesitas su MAC\n");
+        printf("       <int>: numero bytes a mandar\n");
         exit(-1);
     }
 
@@ -27,6 +28,14 @@ int main(int argc, char *argv[]) {
     char *config_name = argv[1];
     char *route_table_name = argv[2];
     char *ip_str = argv[3];
+
+    char *payload_len_str = argv[4];
+    int payload_len_input = atoi(payload_len_str);
+
+    if (payload_len_input > UDP_PACKET_LEN){
+        printf("Longitud del argumento payload demasiado larga\n");
+        exit(-1);
+    }
 
     //comprobamos que la IP es valida
     ipv4_addr_t ip_addr;
@@ -41,9 +50,9 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
     
-    unsigned char payload[UDP_PACKET_LEN];
+    unsigned char payload[payload_len_input];
     int i;
-    for (i = 0; i < UDP_PACKET_LEN; i++) {
+    for (i = 0; i < payload_len_input; i++) {
         payload[i] = (unsigned char) i;
     };
 

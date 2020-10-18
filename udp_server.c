@@ -26,7 +26,6 @@ int main(int argc, char *argv[]) {
     char *config_name = argv[1];
     char *route_table_name = argv[2];
 
-
     //Abrimos la interfaz y comprobamos que se leyo el archivo;
     udp_layer_t *udp_layer = upd_open(327, 1313, config_name, route_table_name);
 
@@ -36,7 +35,7 @@ int main(int argc, char *argv[]) {
     }
 
     unsigned char buffer[UDP_PACKET_LEN];
-    ipv4_addr_t src_addr;
+    //ipv4_addr_t src_addr;
 
     while (1) {
 
