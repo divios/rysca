@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
     };
 
     printf("Enviando paquete\n");
-    if (udp_send(udp_layer, ip_addr, UDP_PROTOCOL, payload, sizeof(payload)) == -1) {
+    if (udp_send(udp_layer, ip_addr, UDP_PROTOCOL, payload, payload_len_input) == -1) {
         printf("No se pudo enviar\n");
         exit(-1);
     }
