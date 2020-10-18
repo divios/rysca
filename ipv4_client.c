@@ -87,6 +87,5 @@ int main(int argc, char *argv[]) {
     }
 
     ipv4_close(ip_layer);
-    exit(-1);
 
 }
