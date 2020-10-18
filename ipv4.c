@@ -219,8 +219,8 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
         return -1;
     }
     int bytes_send = eth_send(layer->iface, your_mac, IPV4_PROTOCOL, (unsigned char *) &ipv4_frame,
-                           ipv4_frame_len);
-    if (bytes_send == -1){
+                              ipv4_frame_len);
+    if (bytes_send == -1) {
         printf("Problema al enviar los datos ipv4\n");
         return -1;
     }
@@ -282,6 +282,12 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char buffer[], ipv
     }
 
     memcpy(sender, ipv4_frame->source, sizeof(ipv4_addr_t));
+    /*Si el payload recibido es menor que el tamaño del buffer,
+    solo copiamos los datos necesarios al buffer. Por otro lado
+    si nuestro buffer no es suficientemente grande para guardar
+    todo el payload, se perderian datos, pero de comprobar eso se
+    encargan las capas superiores, aqui solo que no de segmentatioFault
+    */
     int payload_len = frame_len - IPV4_HEADER_SIZE;
     if (buffer_len > payload_len) {
         buffer_len = payload_len;

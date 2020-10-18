@@ -142,7 +142,7 @@ int udp_recv(udp_layer_t *layer, long int timeout, uint8_t protocol, unsigned ch
     udp_packet_t *udp_frame = NULL;
     int frame_len;
     int udp_buffer_len = buffer_len + UDP_HEADER_LEN;
-    unsigned char udp_buffer[buffer_len];
+    unsigned char udp_buffer[udp_buffer_len];
 
     while (1) {
         //escuchar_puerto()
@@ -162,8 +162,15 @@ int udp_recv(udp_layer_t *layer, long int timeout, uint8_t protocol, unsigned ch
         }
     }
 
-    if (buffer_len > frame_len) {
-        buffer_len = frame_len;
+    /*Si el payload recibido es menor que el tamaño del buffer,
+    solo copiamos los datos necesarios al buffer. Por otro lado
+    si nuestro buffer no es suficientemente grande para guardar
+    todo el payload, se perderian datos, pero de comprobar eso se
+    encargan las capas superiores, aqui solo que no de segmentatioFault
+    */
+    int payload_len = frame_len - UDP_HEADER_LEN;
+    if (buffer_len > payload_len) {
+        buffer_len = payload_len;
     }
 
     memcpy(buffer, udp_frame->payload, buffer_len);

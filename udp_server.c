@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
         long int timeout = -1;
 
         printf("Escuchando a tramas udp\n");
-        int payload_len = udp_recv(udp_layer, timeout, UDP_PROTOCOL, buffer, sizeof(buffer));
+        int payload_len = udp_recv(udp_layer, timeout, UDP_PROTOCOL, buffer, UDP_PACKET_LEN);
 
         if (payload_len == -1) {
             printf("Error al recibir la trama\n");
