@@ -66,7 +66,7 @@ int udp_send(udp_layer_t *layer, ipv4_addr_t dst, uint16_t protocol, uint16_t po
 }
 
 int
-udp_recv(udp_layer_t *layer, long int timeout, uint8_t protocol, ipv4_layer_t sender, uint16_t port, unsigned char *buffer,
+udp_recv(udp_layer_t *layer, long int timeout, uint8_t protocol, ipv4_addr_t sender, uint16_t *port, unsigned char *buffer,
          int buffer_len) {
 
     //check_parametros_correctos()
@@ -107,7 +107,7 @@ udp_recv(udp_layer_t *layer, long int timeout, uint8_t protocol, ipv4_layer_t se
         }
     }
 
-    memcpy(port, udp_frame->src_port, sizeof(int));
+    memcpy(port, udp_frame->src_port, sizeof(uint16_t));
     /*Si el payload recibido es menor que el tamaño del buffer,
     solo copiamos los datos necesarios al buffer. Por otro lado
     si nuestro buffer no es suficientemente grande para guardar

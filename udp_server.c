@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 
     char *config_name = argv[1];
     char *route_table_name = argv[2];
-    uint16_t port_int = argv[3]
+    uint16_t port_int = atoi(argv[3]);
 
     //Abrimos la interfaz y comprobamos que se leyo el archivo;
     udp_layer_t *udp_layer = upd_open(port_in ,config_name, route_table_name);
@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     }
 
     unsigned char buffer[UDP_PACKET_LEN];
-    int port;
+    int *port = malloc(sizeof(uint16_t));
     ipv4_addr_t sender;
     //ipv4_addr_t src_addr;
 
@@ -63,8 +63,9 @@ int main(int argc, char *argv[]) {
 
     printf("Enviando paquetes de vuelta\n");
 
+    udp_send(udp_layer, sender, UDP_PROTOCOL, *port, buffer, payload_len);
 
-    udp_send(udp_layer, sender, UDP_PROTOCOL, port, buffer, payload_len);
+    free(port);
 
     udp_close(udp_layer);
 }
