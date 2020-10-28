@@ -31,11 +31,11 @@ typedef struct udp_packet {
 } udp_packet_t;
 
 
-udp_layer_t *upd_open(uint16_t src_port, uint16_t dst_port, char *ip_config, char *route_config);
+udp_layer_t *udp_open(uint16_t src_port, char *ip_config, char *route_config);
 
 int udp_send(udp_layer_t *layer, ipv4_addr_t dst, uint16_t protocol, unsigned char data[], int payload_len);
 
-int udp_recv(udp_layer_t *layer,long int timeout, uint8_t protocol, unsigned char * payload, int payload_len);
+int udp_recv(udp_layer_t *layer,long int timeout, uint8_t protocol, ipv4_addr_t sender, int port, unsigned char * payload, int payload_len);
 
 void udp_close(udp_layer_t *my_layer);
 

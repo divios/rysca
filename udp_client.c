@@ -15,10 +15,12 @@ int main(int argc, char *argv[]) {
     //el nombre del archivo de text de la config y routas
     //y la ip al que se le debe enviar el mensaje
 
-    if ((argc <= 4) || (argc > 5)) {;
+    if ((argc <= 6) || (argc > 7)) {;
         printf("       <string.txt>: Nombre del archivo config.txt\n");
         printf("       <string.txt>: Nombre del archivo route_table.txt\n");
         printf("        <ip>: ip del pc del cual necesitas su MAC\n");
+        printf("        <puerto_in>: nuestro puerto\n");
+        printf("        <puerto_out>: puerto al que se manda\n");
         printf("       <int>: numero bytes a mandar\n");
         exit(-1);
     }
@@ -28,8 +30,10 @@ int main(int argc, char *argv[]) {
     char *config_name = argv[1];
     char *route_table_name = argv[2];
     char *ip_str = argv[3];
+    uint16_t port_in = argv[4];
+    uint16_t port_out = argv[5]
 
-    char *payload_len_str = argv[4];
+    char *payload_len_str = argv[6];
     int payload_len_input = atoi(payload_len_str);
 
     if (payload_len_input > UDP_PACKET_LEN){
@@ -44,7 +48,7 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
     
-    udp_layer_t *udp_layer = upd_open(1478, 327, config_name, route_table_name);
+    udp_layer_t *udp_layer = udp_open(port_in, config_name, route_table_name);
     if (udp_layer == NULL) {
         printf("Fallo al abrir la interfaz");
         exit(-1);
@@ -57,11 +61,26 @@ int main(int argc, char *argv[]) {
     };
 
     printf("Enviando paquete\n");
-    if (udp_send(udp_layer, ip_addr, UDP_PROTOCOL, payload, payload_len_input) == -1) {
+    if (udp_send(udp_layer, ip_addr, UDP_PROTOCOL, payload, port_out, payload_len_input) == -1) {
         printf("No se pudo enviar\n");
         exit(-1);
     }
-    
+    printf("Escuchando a trama de vuelta\n");
+
+    int timeout = -1;
+    ipv4_addr_t sender;
+    uint16_t port;
+
+    int payload_len = udp_recv(udp_layer, timeout, UDP_PROTOCOL, sender, port, payload, payload_len_input);
+
+    if (payload_len == -1) {
+        printf("Error al recibir la trama\n");
+        exit(-1);
+    } else if (payload_len > 0) {
+        printf("Recibido el paquete\n");
+
+    }
+
     udp_close(udp_layer);
 
 }
