@@ -21,7 +21,8 @@ typedef struct ipv4_layer {
 
 /* Dirección IPv4 a cero: "0.0.0.0" */
 ipv4_addr_t IPv4_ZERO_ADDR = {0, 0, 0, 0};
-
+ipv4_addr_t IPv4_MULTICAST_ADDR = {224, 0, 0, 0};
+ipv4_addr_t IPv4_MULTICAST_NETWORK = [240, 0, 0, 0];
 //Estructura para la trama IPV4 (CONSULTAR)
 typedef struct ipv4_message {
 
@@ -274,8 +275,9 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char buffer[], ipv
 
         //Aqui comprobamos que en el datagram IP sea del tipo que esperamos
         //y va dirigido a nuestra IP, si es asi, guardamos la payload->sender en sender
-        //hacemos break;
-        if (ipv4_frame->protocol == protocol && (memcmp(ipv4_frame->dest, layer->addr, sizeof(ipv4_addr_t)) == 0)) {
+        //hacemos break. Tambien acceptamos direccion multicast;
+        if (ipv4_frame->protocol == protocol && (memcmp(ipv4_frame->dest, layer->addr, sizeof(ipv4_addr_t)) == 0 ||
+               is_multicast(ipv4_frame->dest) ) ) {
             break;
         }
 
@@ -309,4 +311,12 @@ int ipv4_close(ipv4_layer_t *ipv4_layer) {
     }
     free(ipv4_layer);
     return 1;
+}
+
+int is_multicast(ipv4_addr_t addr) {
+    int is_multicast = 0;
+    if ( (addr & IPv4_MULTICAST_NETWORK) == IPv4_MULTICAST_ADDR){
+        is_multicast=1;
+    }
+    return is_multicast;
 }

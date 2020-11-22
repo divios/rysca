@@ -20,6 +20,8 @@ typedef unsigned char ipv4_addr_t[IPv4_ADDR_SIZE];
 
 /* Dirección IPv4 a cero "0.0.0.0" */
 extern ipv4_addr_t IPv4_ZERO_ADDR;
+extern ipv4_addr_t IPv4_MULTICAST_ADDR;
+extern ipv4_addr_t IPv4_MULTICAST_NETWORK;
 
 /* Logitud máxmima del nombre de un interfaz de red */
 #define IFACE_NAME_MAX_LENGTH 32
@@ -87,6 +89,7 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ip
 
 int ipv4_close(ipv4_layer_t *ipv4_layer);
 
+int is_multicast(ipv4_addr_t addr);
 
 #endif /* _IPv4_H */
 
