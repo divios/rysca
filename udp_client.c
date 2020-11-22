@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
         printf("Error al recibir la trama\n");
         exit(-1);
     } else if (payload_len > 0) {
-        printf("Recibido el paquete\n");
+        printf("Recibidos %d bytes\n", payload_len);
     }
 
     free(port);

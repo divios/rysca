@@ -15,10 +15,10 @@ int main(int argc, char *argv[]) {
     //el nombre del archivo de text de la config y routas
     //y la ip al que se le debe enviar el mensaje
 
-    if ((argc <= 2) || (argc > 3)) {
+    if ((argc <= 3) || (argc > 4)) {
         printf("       <string.txt>: Nombre del archivo config.txt\n");
         printf("       <string.txt>: Nombre del archivo route_table.txt\n");
-        printf("       <int>: Puerto a escuchar\n")
+        printf("       <int>: Puerto a escuchar\n");
         exit(-1);
     }
 
@@ -26,10 +26,10 @@ int main(int argc, char *argv[]) {
 
     char *config_name = argv[1];
     char *route_table_name = argv[2];
-    uint16_t port_int = atoi(argv[3]);
+    uint16_t port_in = atoi(argv[3]);
 
     //Abrimos la interfaz y comprobamos que se leyo el archivo;
-    udp_layer_t *udp_layer = upd_open(port_in ,config_name, route_table_name);
+    udp_layer_t *udp_layer = udp_open(port_in ,config_name, route_table_name);
 
     if (udp_layer == NULL) {
         printf("No se pudo leer correctamente el fichero config.txt\n");
@@ -37,8 +37,9 @@ int main(int argc, char *argv[]) {
     }
 
     unsigned char buffer[UDP_PACKET_LEN];
-    int *port = malloc(sizeof(uint16_t));
+    uint16_t *port = malloc(sizeof(uint16_t));
     ipv4_addr_t sender;
+	int payload_len;
     //ipv4_addr_t src_addr;
 
     while (1) {
@@ -49,14 +50,14 @@ int main(int argc, char *argv[]) {
 
         printf("Escuchando a tramas udp\n");
 
-        int payload_len = udp_recv(udp_layer, timeout, UDP_PROTOCOL, sender, port, buffer, UDP_PACKET_LEN);
+        payload_len = udp_recv(udp_layer, timeout, UDP_PROTOCOL, sender, port, buffer, UDP_PACKET_LEN);
 
         if (payload_len == -1) {
             printf("Error al recibir la trama\n");
             exit(-1);
         }
 
-        printf("Recibido el paquete\n");
+        printf("Recibidos %d bytes\n", payload_len);
         break;
 
     }
