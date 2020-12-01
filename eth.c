@@ -261,6 +261,7 @@ int eth_recv
     int eth_buf_len = ETH_HEADER_SIZE + buf_len;
     unsigned char eth_buffer[eth_buf_len];
     struct eth_frame *eth_frame_ptr = NULL;
+    int is_multicast;
     int is_target_type;
     int is_my_mac;
 
@@ -287,7 +288,7 @@ int eth_recv
         eth_frame_ptr = (struct eth_frame *) eth_buffer;
         is_my_mac = (memcmp(eth_frame_ptr->dest_addr,
                             iface->mac_address, MAC_ADDR_SIZE) == 0);
-        is_multicast = (eth_frame_ptr->dest_addr[0] & 0x20) == 0x20;
+        is_multicast = ((eth_frame_ptr->dest_addr[0] & 0x20) == 0x20);
         is_target_type = (ntohs(eth_frame_ptr->type) == type);
 
     } while (!( (is_my_mac || is_multicast) && is_target_type));
