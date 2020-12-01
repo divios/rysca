@@ -39,8 +39,8 @@ entrada_rip_t *rip_route_create
     entrada_rip_t *route = (entrada_rip_t *) malloc(sizeof(entrada_rip_t));
 
     if ((route != NULL) &&
-        (dest != NULL) && (dest_mask != NULL) && (iface != NULL) && (next_hop != NULL) && (strlen(iface) <= IFACE_NAME_MAX_LENGTH) ) {
-        memcpy(route->dest, subnet, IPv4_ADDR_SIZE);
+        (subnet != NULL) && (mask != NULL) && (iface != NULL) && (next_hop != NULL)) {
+        memcpy(route->subnet, subnet, IPv4_ADDR_SIZE);
         memcpy(route->mask, mask, IPv4_ADDR_SIZE);
         memcpy(route->iface, iface, strlen(iface));
         memcpy(route->gw, next_hop, IPv4_ADDR_SIZE);
@@ -58,7 +58,7 @@ entrada_rip_t *rip_route_create
  *de todos los bytes. Luego sumamos si el ultimo byte es 1
  */
 
-int switch_lookup(unsigned char mask) {
+int rip_switch_lookup(unsigned char mask) {
     int c;
     for (c = 0; mask; mask >>= 1) {
         c += mask & 1;
@@ -101,7 +101,7 @@ int rip_route_lookup(ipv4_route_t *route, ipv4_addr_t addr) {
             return -1;
         }
         //contamos a la vez el numero de 1s cada octeto de la mascara
-        prefix_length += switch_lookup(route->mask[i]);
+        prefix_length += rip_switch_lookup(route->mask[i]);
     }
     return prefix_length;
 }
@@ -117,9 +117,9 @@ int rip_route_lookup(ipv4_route_t *route, ipv4_addr_t addr) {
 void rip_route_print(entrada_rip_t *route) {
     if (route != NULL) {
         char subnet_str[IPv4_STR_MAX_LENGTH];
-        ipv4_addr_str(route->dest, subnet_str);
+        ipv4_addr_str(route->subnet, subnet_str);
         char mask_str[IPv4_STR_MAX_LENGTH];
-        ipv4_addr_str(route->dest_subred, mask_str);
+        ipv4_addr_str(route->mask, mask_str);
         char *iface_str = route->iface;
         char gw_str[IPv4_STR_MAX_LENGTH];
         ipv4_addr_str(route->gw, gw_str);
@@ -219,7 +219,7 @@ entrada_rip_t *rip_route_read(char *filename, int linenum, char *line) {
     }
 
     /* Create new route with parsed parameters */
-    route = rip_route_create(subnet, mask, metric, iface, gateway);
+    route = rip_route_create(subnet, mask, metric, iface_name, gateway);
     if (route == NULL) {
         fprintf(stderr, "%s:%d: Error creating the new route\n",
                 filename, linenum);
@@ -268,10 +268,10 @@ int rip_route_output(entrada_rip_t *route, int header, FILE *out) {
         ipv4_addr_str(route->mask, mask_str);
         ifname = route->iface;
         ipv4_addr_str(route->gw, gw_str);
-        itoa(route->metric, metric_str, 10);
+        sprintf(metric_str, "%d", route->metric);
 
         err = fprintf(out, "%-15s\t%-15s\t%s\t%-15s\t%-15s\n",
-                      subnet_str, mask_str, ifname, gw_str);
+                      subnet_str, mask_str, ifname, gw_str, metric_str);
         if (err < 0) {
             return -1;
         }

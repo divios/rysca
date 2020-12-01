@@ -10,7 +10,7 @@
 typedef struct entrada_rip{
 
     ipv4_addr_t subnet;
-    ipv4_layer_t mask;
+    ipv4_addr_t mask;
     ipv4_addr_t gw;
     char iface[IFACE_NAME_MAX_LENGTH];
     int metric;

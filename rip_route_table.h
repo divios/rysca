@@ -47,7 +47,7 @@ entrada_rip_t *rip_route_create
  *de todos los bytes. Luego sumamos si el ultimo byte es 1
  */
 
-int switch_lookup(unsigned char mask);
+int rip_switch_lookup(unsigned char mask);
 
 
 /* int ipv4_route_lookup ( ipv4_route_t * route, ipv4_addr_t addr );
@@ -73,7 +73,7 @@ int switch_lookup(unsigned char mask);
  *   La función devuelve '-1' si la dirección IPv4 no pertenece a la subred
  *   apuntada por la ruta especificada.
  */
-int rip_route_lookup(ipv4_route_t *route, ipv4_addr_t addr);
+int rip_route_lookup(entrada_rip_t *route, ipv4_addr_t addr);
 
 /* void ipv4_route_print ( ipv4_route_t * route );
  *
