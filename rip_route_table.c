@@ -34,12 +34,14 @@
  *   crear la ruta.
  */
 entrada_rip_t *rip_route_create
-        (ipv4_addr_t subnet, ipv4_addr_t mask, int metric, char *iface, ipv4_addr_t next_hop) {
+        (ipv4_addr_t subnet, ipv4_addr_t mask, ipv4_addr_t next_hop, int metric ) {
 
     entrada_rip_t *route = (entrada_rip_t *) malloc(sizeof(entrada_rip_t));
 
     if ((route != NULL) &&
-        (subnet != NULL) && (mask != NULL) && (iface != NULL) && (next_hop != NULL)) {
+        (subnet != NULL) && (mask != NULL) && (next_hop != NULL)) {
+        route->family_directions = DEAFULT_FAMILY_DIRECTION;
+        route->route_label = UNUSED;
         memcpy(route->subnet, subnet, IPv4_ADDR_SIZE);
         memcpy(route->mask, mask, IPv4_ADDR_SIZE);
         memcpy(route->iface, iface, strlen(iface));
@@ -120,12 +122,11 @@ void rip_route_print(entrada_rip_t *route) {
         ipv4_addr_str(route->subnet, subnet_str);
         char mask_str[IPv4_STR_MAX_LENGTH];
         ipv4_addr_str(route->mask, mask_str);
-        char *iface_str = route->iface;
         char gw_str[IPv4_STR_MAX_LENGTH];
         ipv4_addr_str(route->gw, gw_str);
         int metric = route->metric;
 
-        printf("%s/%s via %s dev %s %i", subnet_str, mask_str, gw_str, iface_str, metric);
+        printf("%s/%s via %s %i", subnet_str, mask_str, gw_str, metric);
     }
 }
 
@@ -168,18 +169,17 @@ entrada_rip_t *rip_route_read(char *filename, int linenum, char *line) {
 
     char subnet_str[256];
     char mask_str[256];
-    char iface_name[256];
     char gw_str[256];
     char str_metric[2];
 
     /* Parse line: Format "<subnet> <mask> <iface> <gw>\n" */
-    int params = sscanf(line, "%s %s %s %s %s\n",
-                        subnet_str, mask_str, iface_name, gw_str, str_metric);
-    if (params != 5) {
+    int params = sscanf(line, "%s %s %s %s\n",
+                        subnet_str, mask_str, gw_str, str_metric);
+    if (params != 4) {
         fprintf(stderr, "%s:%d: Invalid IPv4 Route format: '%s' (%d params)\n",
                 filename, linenum, line, params);
         fprintf(stderr,
-                "%s:%d: Format must be: <subnet> <mask> <iface> <gw>\n",
+                "%s:%d: Format must be: <subnet> <mask> <gw> <metric>\n",
                 filename, linenum);
         return NULL;
     }
@@ -219,7 +219,7 @@ entrada_rip_t *rip_route_read(char *filename, int linenum, char *line) {
     }
 
     /* Create new route with parsed parameters */
-    route = rip_route_create(subnet, mask, metric, iface_name, gateway);
+    route = rip_route_create(subnet, mask, gateway, metric);
     if (route == NULL) {
         fprintf(stderr, "%s:%d: Error creating the new route\n",
                 filename, linenum);
@@ -251,7 +251,7 @@ int rip_route_output(entrada_rip_t *route, int header, FILE *out) {
     int err;
 
     if (header == 0) {
-        err = fprintf(out, "# SubnetAddr  \tSubnetMask  \tIface  \tGateway\n");
+        err = fprintf(out, "# SubnetAddr  \tSubnetMask  \tGateway  \tMetric\n");
         if (err < 0) {
             return -1;
         }
@@ -259,19 +259,17 @@ int rip_route_output(entrada_rip_t *route, int header, FILE *out) {
 
     char subnet_str[IPv4_STR_MAX_LENGTH];
     char mask_str[IPv4_STR_MAX_LENGTH];
-    char *ifname = NULL;
     char gw_str[IPv4_STR_MAX_LENGTH];
     char metric_str[2];
 
     if (route != NULL) {
         ipv4_addr_str(route->subnet, subnet_str);
         ipv4_addr_str(route->mask, mask_str);
-        ifname = route->iface;
         ipv4_addr_str(route->gw, gw_str);
         sprintf(metric_str, "%d", route->metric);
 
-        err = fprintf(out, "%-15s\t%-15s\t%s\t%-15s\t%-15s\n",
-                      subnet_str, mask_str, ifname, gw_str, metric_str);
+        err = fprintf(out, "%-15s\t%-15s\t%s\t%-15s\n",
+                      subnet_str, mask_str, gw_str, metric_str);
         if (err < 0) {
             return -1;
         }
