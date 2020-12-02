@@ -44,7 +44,6 @@ entrada_rip_t *rip_route_create
         route->route_label = UNUSED;
         memcpy(route->subnet, subnet, IPv4_ADDR_SIZE);
         memcpy(route->mask, mask, IPv4_ADDR_SIZE);
-        memcpy(route->iface, iface, strlen(iface));
         memcpy(route->gw, next_hop, IPv4_ADDR_SIZE);
         route->metric = metric;
 
@@ -92,7 +91,7 @@ int rip_switch_lookup(unsigned char mask) {
  *   La función devuelve '-1' si la dirección IPv4 no pertenece a la subred
  *   apuntada por la ruta especificada.
  */
-int rip_route_lookup(ipv4_route_t *route, ipv4_addr_t addr) {
+int rip_route_lookup(entrada_rip_t *route, ipv4_addr_t addr) {
     int prefix_length = 0;
 
     //recorremos los 4 octetos

@@ -38,7 +38,7 @@
  *   crear la ruta.
  */
 entrada_rip_t *rip_route_create
-        (ipv4_addr_t subnet, ipv4_addr_t mask, int metric, char *iface, ipv4_addr_t next_hop);
+        (ipv4_addr_t subnet, ipv4_addr_t mask, int metric, ipv4_addr_t next_hop);
 
 
 /*Esta funcion recibe como paraemtro un unsigned char y cuenta
