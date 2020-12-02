@@ -309,7 +309,7 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char buffer[], ipv
     todo el payload, se perderian datos, pero de comprobar eso se
     encargan las capas superiores, aqui solo que no de segmentatioFault
     */
-    int payload_len = frame_len - IPV4_HEADER_SIZE;
+    int payload_len = ipv4_frame->total_len - IPV4_HEADER_SIZE;
     if (buffer_len > payload_len) {
         buffer_len = payload_len;
     }
