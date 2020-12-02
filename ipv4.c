@@ -22,6 +22,7 @@ typedef struct ipv4_layer {
 /* Dirección IPv4 a cero: "0.0.0.0" */
 ipv4_addr_t IPv4_ZERO_ADDR = {0, 0, 0, 0};
 ipv4_addr_t IPv4_MULTICAST_ADDR = {224, 0, 0, 0};
+ipv4_addr_t IPv4_MULTICAST_NETWORK = {240, 0, 0, 0};
 //Estructura para la trama IPV4 (CONSULTAR)
 typedef struct ipv4_message {
 
