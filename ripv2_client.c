@@ -6,7 +6,6 @@
 #include <rawnet.h>
 #include <timerms.h>
 
-#include "rip_route_table.h"
 #include "ripv2.h"
 
 int main(int argc, char *argv[]) {
@@ -36,13 +35,13 @@ int main(int argc, char *argv[]) {
 
     while (1) {
         long int min_time = 0;//TODO: timeleft
-        ripv2_msg_t *payload = malloc(sizeof(ripv2_msg_t));
+        ripv2_msg_t payload;
         uint16_t *port_out = malloc(sizeof(uint16_t));
         ipv4_addr_t myIP;
         ipv4_getAddr(udp_layer->ipv4_layer,
                      myIP); /* Tal y como esta declaradas las estructuras en el .h, no son accesibles */
 
-        int n = udp_recv(udp_layer, min_time, UDP_PROTOCOL, myIP, port_out, (unsigned char *) payload, sizeof(payload));
+        int n = udp_recv(udp_layer, min_time, UDP_PROTOCOL, myIP, port_out, (unsigned char *) &payload, sizeof(payload));
 
         if (n > 0 && (*port_out == RIP_PORT)) {
             //TODO: procesar el mensaje segun si es request o response
@@ -51,15 +50,10 @@ int main(int argc, char *argv[]) {
         /*Devuelve las entradas con timers expirados */
         rip_route_table_t *expired = ripv2_route_table_get_expired(rip_table);
 
-        /* TODO: Eliminamos las entradas expiradas (meter en una funcion? */
-        for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
-            entrada_rip_t *entry = expired->routes[i];
-            if (entry == NULL) break; /*En esta tabla a la que sea null es que no hay mas */
-            int index = ripv2_route_table_find(rip_table, entry);
-            ripv2_route_table_remove(rip_table, index);
+        ripv2_route_table_remove_expired(rip_table, expired);
 
-        }
         ripv2_route_table_free(expired);
+
 
     }
 
