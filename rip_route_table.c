@@ -352,7 +352,7 @@ entrada_rip_t *ripv2_route_table_remove(rip_route_table_t *table, int index) {
     entrada_rip_t *removed_rip_entry = NULL;
     if (table != NULL && index >= 0 && index < RIP_ROUTE_TABLE_SIZE) {
         removed_rip_entry = table->routes[index];
-        routes[index] = NULL;
+        table[index] = NULL;
     }
     return removed_rip_entry;
 }
@@ -367,7 +367,7 @@ entrada_rip_t *ripv2_route_table_lookup(rip_route_table_t *table, entrada_rip_t 
         for (int i = 0; i<RIP_ROUTE_TABLE_SIZE; i++) {
             entrada_rip_t *rip_entry = table->routes[i];
             if (rip_entry != NULL) {
-                int route_i_lookup = ripv2_route_lookup(rip_entry, entrada);
+                int route_i_lookup = ripv2_route_lookup(rip_entry, entrada->subnet);
                 if (route_i_lookup > best_route_prefix) {
                     best_route_prefix = route_i_lookup;
                     best_route = rip_entry;
@@ -389,7 +389,7 @@ entrada_rip_t *ripv2_route_table_get(rip_route_table_t *table, int index) {
     return entry;
 }
 
-int ipv4_route_table_find(rip_route_table_t *table, entrada_rip_t entry_to_find) {
+int ipv4_route_table_find(rip_route_table_t *table, entrada_rip_t *entry_to_find) {
 
     entrada_rip_t *entry = NULL;
     int route_index = -2;
@@ -412,7 +412,7 @@ void ripv2_route_table_free(rip_route_table_t *table) {
 
     if (table != NULL) {
         for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
-            entrada_rip_t entry = table->routes[i];
+            entrada_rip_t *entry = table->routes[i];
             if (entry != NULL) {
                 table->routes[i] = NULL;
                 ripv2_route_free(entry);
@@ -486,7 +486,7 @@ int ripv2_route_table_output(rip_route_table_t *table, FILE *out) {
 
     if (table != NULL) {
         for (int i = 0; i<RIP_ROUTE_TABLE_SIZE; i++) {
-            entrada_rip_t entry = table->routes[i];
+            entrada_rip_t *entry = table->routes[i];
             if (entry != NULL) {
                 err = ripv2_route_output(entry, i, out);
                 if (err == -1) {
@@ -498,7 +498,7 @@ int ripv2_route_table_output(rip_route_table_t *table, FILE *out) {
     return 0;
 }
 
-int ripv2_route_table_write(rip_route_table_t table, char *filename) {
+int ripv2_route_table_write(rip_route_table_t *table, char *filename) {
     int num_entradas = 0;
     FILE *entrada_file = fopen(filename, "w");
     if (entrada_file == NULL) {
@@ -521,7 +521,7 @@ int ripv2_route_table_write(rip_route_table_t table, char *filename) {
 }
 
 void ripv2_route_table_print(rip_route_table_t *table) {
-    if (table = NULL) {
+    if (table != NULL) {
         ripv2_route_table_output(table, stdout);
     }
 }

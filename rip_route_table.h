@@ -8,7 +8,6 @@
 #include "ripv2.h"
 #include <stdio.h>
 
-#define RIP_ROUTE_TABLE_SIZE 25
 #define RIP_ROUTE_DEFAULT_TIME 180
 
 /* ipv4_route_t * ipv4_route_create

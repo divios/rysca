@@ -12,6 +12,7 @@
 #define UNUSED 0x0000
 #define DEAFULT_FAMILY_DIRECTION 2
 #define RIPv2_TYPE_VERSION 2
+#define RIP_ROUTE_TABLE_SIZE 25
 
 
 typedef struct entrada_rip{
