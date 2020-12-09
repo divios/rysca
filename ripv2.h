@@ -13,6 +13,7 @@
 #define DEAFULT_FAMILY_DIRECTION 2
 #define RIPv2_TYPE_VERSION 2
 #define RIP_ROUTE_TABLE_SIZE 25
+#define RIP_PORT 55
 
 
 typedef struct entrada_rip{

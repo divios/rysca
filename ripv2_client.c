@@ -23,9 +23,10 @@ int main(int argc, char *argv[]) {
     char *config_name = argv[1];
     char *route_table_name = argv[2];
     char *rip_route_table_name = argv[3];
-    uint16_t port_in = atoi(argv[4]);
+    uint16_t port_in = atoi(argv[4]); /* Lo suyo es harcodearlo a RIP_PORT 55 */
 
-    rip_route_table_t *rip_table = ripv2_route_table_create();
+    rip_route_table_t *rip_table = NULL;
+    ripv2_route_table_read(rip_route_table_name, rip_table);
 
     udp_layer_t *udp_layer = udp_open(port_in, config_name, route_table_name);
     if (udp_layer == NULL) {
@@ -33,16 +34,14 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
-
     while (1) {
-        long int min_time = 0;
-        //TODO: timeleft
-
+        long int min_time = 0;//TODO: timeleft
         ripv2_msg_t *payload = malloc(sizeof(ripv2_msg_t));
+        uint16_t *port_out = malloc(sizeof(uint16_t));
 
-        int n = udp_recv(udp_layer, min_time, UDP_PROTOCOL, udp_layer->ipv4_layer->addr, port_int, payload, sizeof(payload));
+        int n = udp_recv(udp_layer, min_time, UDP_PROTOCOL, udp_layer->ipv4_layer->iface, port_out, (unsigned char *) payload, sizeof(payload));
 
-        if (n > 0) {
+        if (n > 0  && (*port_out == RIP_PORT) ) {
             //TODO: procesar el mensaje segun si es request o response
         }
 
