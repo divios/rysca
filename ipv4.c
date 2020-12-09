@@ -9,36 +9,10 @@
 #include "ipv4_config.h"
 #include "arp.h"
 
-//Estructura que guarda toda la informacion de la interfaz
-typedef struct ipv4_layer {
-
-    eth_iface_t *iface;
-    ipv4_addr_t addr;
-    ipv4_addr_t network;
-    ipv4_route_table_t *routing_table;
-
-} ipv4_layer_t;
-
 /* Dirección IPv4 a cero: "0.0.0.0" */
 ipv4_addr_t IPv4_ZERO_ADDR = {0, 0, 0, 0};
 ipv4_addr_t IPv4_MULTICAST_ADDR = {224, 0, 0, 0};
 ipv4_addr_t IPv4_MULTICAST_NETWORK = {240, 0, 0, 0};
-//Estructura para la trama IPV4 (CONSULTAR)
-typedef struct ipv4_message {
-
-    uint8_t version;
-    uint8_t type;
-    uint16_t total_len;
-    uint16_t id;
-    uint16_t flags_offset;
-    uint8_t TTL;
-    uint8_t protocol;
-    uint16_t checksum;
-    ipv4_addr_t source;
-    ipv4_addr_t dest;
-    unsigned char data[MRU];
-
-} ipv4_message_t;
 
 /* void ipv4_addr_str ( ipv4_addr_t addr, char* str );
  *
