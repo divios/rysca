@@ -140,9 +140,6 @@ entrada_rip_t *ripv2_route_read(char *filename, int linenum, char *line);
 int ripv2_route_output(entrada_rip_t *route, int header, FILE *out);
 
 
-typedef struct rip_route_table rip_route_table_t;
-
-
 /* ipv4_route_table_t * ipv4_route_table_create();
  *
  * DESCRIPCIÓN:

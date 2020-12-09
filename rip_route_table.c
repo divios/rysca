@@ -4,8 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-
-#include "ripv2.h"
+#include <timerms.h>
 
 /* ipv4_route_t * ipv4_route_create
  * ( ipv4_addr_t subnet, ipv4_addr_t mask, char* iface, ipv4_addr_t gw );
@@ -279,11 +278,6 @@ int ripv2_route_output(entrada_rip_t *route, int header, FILE *out) {
     return 0;
 }
 
-
-struct rip_route_table {
-    entrada_rip_t *routes[RIP_ROUTE_TABLE_SIZE];
-};
-
 /* ipv4_route_table_t * ipv4_route_table_create();
  *
  * DESCRIPCIÓN:
@@ -354,7 +348,7 @@ int ripv2_route_table_add(rip_route_table_t *table, entrada_rip_t *route) {
 }
 
 
-entrada_ripv2_t *ripv2_route_table_remove(rip_route_table_t *table, int index) {
+entrada_rip_t *ripv2_route_table_remove(rip_route_table_t *table, int index) {
     entrada_rip_t *removed_rip_entry = NULL;
     if (table != NULL && index >= 0 && index < RIP_ROUTE_TABLE_SIZE) {
         removed_rip_entry = table->routes[index];
@@ -364,13 +358,13 @@ entrada_ripv2_t *ripv2_route_table_remove(rip_route_table_t *table, int index) {
 }
 
 //probablemente ni se utilice
-entrada_ripv2_t *ripv2_route_table_lookup(rip_route_table_t *table, entrada_rip_t *entrada) {
+entrada_rip_t *ripv2_route_table_lookup(rip_route_table_t *table, entrada_rip_t *entrada) {
 
     entrada_rip_t *best_route = NULL;
     int best_route_prefix = -1;
 
     if (table != NULL) {
-        for (int i = 0, i<RIP_ROUTE_TABLE_SIZE, i++) {
+        for (int i = 0; i<RIP_ROUTE_TABLE_SIZE; i++) {
             entrada_rip_t *rip_entry = table->routes[i];
             if (rip_entry != NULL) {
                 int route_i_lookup = ripv2_route_lookup(rip_entry, entrada);
@@ -388,7 +382,7 @@ entrada_ripv2_t *ripv2_route_table_lookup(rip_route_table_t *table, entrada_rip_
 entrada_rip_t *ripv2_route_table_get(rip_route_table_t *table, int index) {
 
     entrada_rip_t *entry = NULL;
-    if ((table != NULL) && (index >= 0) && (index< RIP_ROUTE_TABLE_SIZE) ) {
+    if ((table != NULL) && (index >= 0) && (index < RIP_ROUTE_TABLE_SIZE)) {
         entry = table->routes[index];
 
     }
@@ -400,11 +394,11 @@ int ipv4_route_table_find(rip_route_table_t *table, entrada_rip_t entry_to_find)
     entrada_rip_t *entry = NULL;
     int route_index = -2;
 
-    if (table =! NULL && entry_to_find != NULL) {
+    if ((table = !NULL) && (entry_to_find != NULL)) {
         route_index = -1;
-        for (int i =0, i < RIP_ROUTE_TABLE_SIZE, i++) {
+        for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
             entry = table->routes[i];
-            if (table =! NULL && memcmp(entry_to_find, entry, sizeof(entrada_rip_t)) == 0) {
+            if (table = !NULL && memcmp(entry_to_find, entry, sizeof(entrada_rip_t)) == 0) {
                 route_index = i;
                 break;
             }
@@ -417,7 +411,7 @@ int ipv4_route_table_find(rip_route_table_t *table, entrada_rip_t entry_to_find)
 void ripv2_route_table_free(rip_route_table_t *table) {
 
     if (table != NULL) {
-        for (int i = 0; i<RIP_ROUTE_TABLE_SIZE, i++) {
+        for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
             entrada_rip_t entry = table->routes[i];
             if (entry != NULL) {
                 table->routes[i] = NULL;
@@ -432,7 +426,7 @@ int ripv2_route_table_read(char *filename, rip_route_table_t *table) {
     int read_routes = 0;
 
     FILE *route_file = fopen(filename, "r");
-    if (route_file == NULL ) {
+    if (route_file == NULL) {
         fprintf(stderr, "Error opening input rip Routes file \"%s\": %s.\n",
                 filename, strerror(errno));
         return -1;
@@ -447,7 +441,7 @@ int ripv2_route_table_read(char *filename, rip_route_table_t *table) {
         linenum++;
 
         /* Read next line of file */
-        char *line = fgets(line_buf, 1024, routes_file);
+        char *line = fgets(line_buf, 1024, route_file);
         if (line == NULL) {
             break;
         }
@@ -490,8 +484,8 @@ int ripv2_route_table_read(char *filename, rip_route_table_t *table) {
 int ripv2_route_table_output(rip_route_table_t *table, FILE *out) {
     int err;
 
-    if (table != NULL ) {
-        for (int i = 0, i< RIP_ROUTE_TABLE_SIZE, i++) {
+    if (table != NULL) {
+        for (int i = 0; i<RIP_ROUTE_TABLE_SIZE; i++) {
             entrada_rip_t entry = table->routes[i];
             if (entry != NULL) {
                 err = ripv2_route_output(entry, i, out);
@@ -527,7 +521,7 @@ int ripv2_route_table_write(rip_route_table_t table, char *filename) {
 }
 
 void ripv2_route_table_print(rip_route_table_t *table) {
-    if (entrada = NULL) {
+    if (table = NULL) {
         ripv2_route_table_output(table, stdout);
     }
 }
