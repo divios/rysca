@@ -28,10 +28,6 @@ typedef struct entrada_rip{
 
 } entrada_rip_t;
 
-typedef struct rip_route_table {
-    entrada_rip_t *routes[RIP_ROUTE_TABLE_SIZE];
-} rip_route_table_t;
-
 
 typedef struct ripv2_msg{
 

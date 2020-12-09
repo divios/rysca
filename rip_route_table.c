@@ -6,6 +6,12 @@
 #include <errno.h>
 #include <timerms.h>
 
+
+typedef struct rip_route_table {
+    entrada_rip_t *routes[RIP_ROUTE_TABLE_SIZE];
+} rip_route_table_t;
+
+
 /* ipv4_route_t * ipv4_route_create
  * ( ipv4_addr_t subnet, ipv4_addr_t mask, char* iface, ipv4_addr_t gw );
  *
@@ -541,4 +547,13 @@ rip_route_table_t* ripv2_route_table_get_expired(rip_route_table_t * table) {
     return expired;
 }
 
+void ripv2_route_table_remove_expired(rip_route_table_t *table, rip_route_table_t *expired) {
 
+    for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
+        entrada_rip_t *entry = expired->routes[i];
+        if (entry == NULL) break; /*En esta tabla a la que sea null es que no hay mas */
+        int index = ripv2_route_table_find(table, entry);
+        ripv2_route_table_remove(table, index);
+
+    }
+}

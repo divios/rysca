@@ -10,6 +10,8 @@
 
 #define RIP_ROUTE_DEFAULT_TIME 180
 
+typedef struct rip_route_table rip_route_table_t;
+
 entrada_rip_t *ripv2_route_create
         (ipv4_addr_t subnet, ipv4_addr_t mask, ipv4_addr_t next_hop, int metric);
 
@@ -48,5 +50,7 @@ int ripv2_route_table_write(rip_route_table_t *table, char * filename);
 void ripv2_route_table_print(rip_route_table_t * entrada);
 
 rip_route_table_t* ripv2_route_table_get_expired(rip_route_table_t * table);
+
+void ripv2_route_table_remove_expired(rip_route_table_t *table, rip_route_table_t *expired);
 
 #endif //RYSCA_UDP_ROUTE_TABLE_H
