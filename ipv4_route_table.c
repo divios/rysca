@@ -48,13 +48,11 @@ ipv4_route_t *ipv4_route_create
     return route;
 }
 
-
 /*Esta funcion recibe como paraemtro un unsigned char y cuenta
  *todos los bits a 1 en este. Para hacer esto el for no para hasta
  *que mask este a 0s, y con cada itineracion hace un shift a la izquierda
  *de todos los bytes. Luego sumamos si el ultimo byte es 1
  */
-
 int switch_lookup(unsigned char mask) {
     int c;
     for (c = 0; mask; mask >>= 1) {
@@ -62,7 +60,6 @@ int switch_lookup(unsigned char mask) {
     }
     return c;
 }
-
 
 /* int ipv4_route_lookup ( ipv4_route_t * route, ipv4_addr_t addr );
  *
@@ -216,7 +213,6 @@ ipv4_route_t *ipv4_route_read(char *filename, int linenum, char *line) {
     return route;
 }
 
-
 /* void ipv4_route_output ( ipv4_route_t * route, FILE * out );
  *
  * DESCRIPCIÓN:
@@ -272,8 +268,8 @@ struct ipv4_route_table {
 };
 
 /* ipv4_route_table_t * ipv4_route_table_create();
- * 
- * DESCRIPCIÓN: 
+ *
+ * DESCRIPCIÓN:
  *   Esta función crea una tabla de rutas IPv4 vacía.
  *
  *   Esta función reserva memoria para la tabla de rutas creada, para
@@ -300,21 +296,20 @@ ipv4_route_table_t *ipv4_route_table_create() {
     return table;
 }
 
-
-/* int ipv4_route_table_add ( ipv4_route_table_t * table, 
+/* int ipv4_route_table_add ( ipv4_route_table_t * table,
  *                            ipv4_route_t * route );
- * DESCRIPCIÓN: 
+ * DESCRIPCIÓN:
  *   Esta función añade la ruta especificada en la primera posición libre de
  *   la tabla de rutas.
  *
  * PARÁMETROS:
  *   'table': Tabla donde añadir la ruta especificada.
  *   'route': Ruta a añadir en la tabla de rutas.
- * 
+ *
  * VALOR DEVUELTO:
  *   La función devuelve el indice de la posición [0,IPv4_ROUTE_TABLE_SIZE-1]
  *   donde se ha añadido la ruta especificada.
- * 
+ *
  * ERRORES:
  *   La función devuelve '-1' si no ha sido posible añadir la ruta
  *   especificada.
@@ -337,14 +332,13 @@ int ipv4_route_table_add(ipv4_route_table_t *table, ipv4_route_t *route) {
     return route_index;
 }
 
-
-/* ipv4_route_t * ipv4_route_table_remove ( ipv4_route_table_t * table, 
+/* ipv4_route_t * ipv4_route_table_remove ( ipv4_route_table_t * table,
  *                                          int index );
  *
  * DESCRIPCIÓN:
  *   Esta función borra la ruta almacenada en la posición de la tabla de rutas
  *   especificada.
- *   
+ *
  *   Esta función NO libera la memoria reservada para la ruta borrada. Para
  *   ello es necesario utilizar la función 'ipv4_route_free()' con la ruta
  *   devuelta.
@@ -353,7 +347,7 @@ int ipv4_route_table_add(ipv4_route_table_t *table, ipv4_route_t *route) {
  *   'table': Tabla de rutas de la que se desea borrar una ruta.
  *   'index': Índice de la ruta a borrar. Debe tener un valor comprendido
  *            entre [0, IPv4_ROUTE_TABLE_SIZE-1].
- * 
+ *
  * VALOR DEVUELTO:
  *   Esta función devuelve la ruta que estaba almacenada en la posición
  *   indicada.
@@ -373,10 +367,9 @@ ipv4_route_t *ipv4_route_table_remove(ipv4_route_table_t *table, int index) {
     return removed_route;
 }
 
-
-/* ipv4_route_t * ipv4_route_table_lookup ( ipv4_route_table_t * table, 
+/* ipv4_route_t * ipv4_route_table_lookup ( ipv4_route_table_t * table,
  *                                          ipv4_addr_t addr );
- * 
+ *
  * DESCRIPCIÓN:
  *   Esta función devuelve la mejor ruta almacenada en la tabla de rutas para
  *   alcanzar la dirección IPv4 destino especificada.
@@ -386,7 +379,7 @@ ipv4_route_t *ipv4_route_table_remove(ipv4_route_table_t *table, int index) {
  *   'ipv4_route_lookup()'. De todas las rutas posibles se devuelve aquella
  *   con el prefijo más específico, esto es, aquella con la máscara de subred
  *   mayor.
- * 
+ *
  * PARÁMETROS:
  *   'table': Tabla de rutas en la que buscar la dirección IPv4 destino.
  *    'addr': Dirección IPv4 destino a buscar.
@@ -421,9 +414,8 @@ ipv4_route_t *ipv4_route_table_lookup(ipv4_route_table_t *table,
     return best_route;
 }
 
-
 /* ipv4_route_t * ipv4_route_table_get ( ipv4_route_table_t * table, int index );
- * 
+ *
  * DESCRIPCIÓN:
  *   Esta función devuelve la ruta almacenada en la posición de la tabla de
  *   rutas especificada.
@@ -432,7 +424,7 @@ ipv4_route_t *ipv4_route_table_lookup(ipv4_route_table_t *table,
  *   'table': Tabla de rutas de la que se desea obtener una ruta.
  *   'index': Índice de la ruta consultada. Debe tener un valor comprendido
  *            entre [0, IPv4_ROUTE_TABLE_SIZE-1].
- * 
+ *
  * VALOR DEVUELTO:
  *   Esta función devuelve la ruta almacenada en la posición de la tabla de
  *   rutas indicada.
@@ -451,8 +443,7 @@ ipv4_route_t *ipv4_route_table_get(ipv4_route_table_t *table, int index) {
     return route;
 }
 
-
-/* int ipv4_route_table_find ( ipv4_route_table_t * table, ipv4_addr_t subnet, 
+/* int ipv4_route_table_find ( ipv4_route_table_t * table, ipv4_addr_t subnet,
  *                                                         ipv4_addr_t mask );
  *
  * DESCRIPCIÓN:
@@ -463,7 +454,7 @@ ipv4_route_t *ipv4_route_table_get(ipv4_route_table_t *table, int index) {
  *    'table': Tabla de rutas en la que buscar la subred.
  *   'subnet': Dirección de la subred a buscar.
  *     'mask': Máscara de la subred a buscar.
- * 
+ *
  * VALOR DEVUELTO:
  *   Esta función devuelve la posición de la tabla de rutas donde se encuentra
  *   la ruta que apunta a la subred especificada.

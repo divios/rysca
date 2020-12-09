@@ -35,7 +35,7 @@ entrada_rip_t * ripv2_route_table_lookup(rip_route_table_t *table, entrada_rip_t
 
 entrada_rip_t * ripv2_route_table_get(rip_route_table_t *table, int index);
 
-int ipv4_route_table_find(rip_route_table_t * table, entrada_rip_t *entry_to_find);
+int ripv2_route_table_find(rip_route_table_t * table, entrada_rip_t *entry_to_find);
 
 void ripv2_route_table_free(rip_route_table_t *table);
 
