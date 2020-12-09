@@ -526,4 +526,19 @@ void ripv2_route_table_print(rip_route_table_t *table) {
     }
 }
 
+rip_route_table_t* ripv2_route_table_get_expired(rip_route_table_t * table) {
+    rip_route_table_t *expired = ripv2_route_table_create();
+
+    if (table != NULL) {
+        for (int i=0; i<RIP_ROUTE_TABLE_SIZE; i++) {
+            entrada_rip_t entry = table->routes[i];
+            if ((entry != NULL) && (timerms_left(&(entry.timer)) == 0) ) {
+                ripv2_route_table_add(expired, entry);
+            }
+        }
+    }
+
+    return expired;
+}
+
 

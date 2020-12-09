@@ -6,13 +6,8 @@
 #include <rawnet.h>
 #include <timerms.h>
 
-#include "udp.h"
 #include "rip_route_table.h"
 #include "ripv2.h"
-#include "ipv4.h"
-
-
-//INCIALIZAR TABLAS RIPV2
 
 int main(int argc, char *argv[]) {
 
@@ -20,7 +15,7 @@ int main(int argc, char *argv[]) {
     if ((argc <= 6) || (argc > 7)) {
         printf("       <string.txt>: Nombre del archivo config.txt\n");
         printf("       <string.txt>: Nombre del archivo route_table.txt\n");
-        printf("       <string.txt>: Nombre del archivo rip_route_table.txt\n")
+        printf("       <string.txt>: Nombre del archivo rip_route_table.txt\n");
         printf("        <puerto_in>: nuestro puerto\n");
         exit(-1);
     }
@@ -30,9 +25,7 @@ int main(int argc, char *argv[]) {
     char *rip_route_table_name = argv[3];
     uint16_t port_in = atoi(argv[4]);
 
-    rip_route_table_t rip_table;
-
-
+    rip_route_table_t *rip_table = ripv2_route_table_create();
 
     udp_layer_t *udp_layer = udp_open(port_in, config_name, route_table_name);
     if (udp_layer == NULL) {
@@ -43,26 +36,28 @@ int main(int argc, char *argv[]) {
 
     while (1) {
         long int min_time = 0;
-        //timeleft
+        //TODO: timeleft
 
-        ripv2_msg_t payload;
+        ripv2_msg_t *payload = malloc(sizeof(ripv2_msg_t));
 
-        int n = udp_recv(udp_layer, min_time, UDP_PROTOCOL, udp_layer->ipv4_layer->addr, port_int, &payload, sizeof(payload));
+        int n = udp_recv(udp_layer, min_time, UDP_PROTOCOL, udp_layer->ipv4_layer->addr, port_int, payload, sizeof(payload));
 
         if (n > 0) {
-            //procesar el mensaje segun si es request o response
+            //TODO: procesar el mensaje segun si es request o response
         }
 
-        //recorremos tabla en busca de timers a 0
-        for (i=0, i< RIP_ROUTE_TABLE_SIZE, i++) {
+        /*Devuelve las entradas con timers expirados */
+        rip_route_table_t *expired = ripv2_route_table_get_expired(rip_table);
 
-            entrada_rip_t entrada = rip_tablet->routes[i];
-
-            if (entrada != NULL) {
-
-            }
+        /* TODO: Eliminamos las entradas expiradas (meter en una funcion? */
+        for(int i = 0; i<RIP_ROUTE_TABLE_SIZE; i++) {
+            entrada_rip_t *entry = expired->routes[i];
+            if (entry == NULL) break; /*En esta tabla a la que sea null es que no hay mas */
+            int index = ripv2_route_table_find(rip_table, entry);
+            ripv2_route_table_remove(rip_table, index);
 
         }
+        ripv2_route_table_free(expired);
 
     }
 
