@@ -103,7 +103,7 @@ int ripv2_route_lookup(entrada_rip_t *route, ipv4_addr_t addr) {
             return -1;
         }
         //contamos a la vez el numero de 1s cada octeto de la mascara
-        prefix_length += rip_switch_lookup(route->mask[i]);
+        prefix_length += ripv2_switch_lookup(route->mask[i]);
     }
     return prefix_length;
 }
@@ -350,9 +350,9 @@ int ripv2_route_table_add(rip_route_table_t *table, entrada_rip_t *route) {
 
 entrada_rip_t *ripv2_route_table_remove(rip_route_table_t *table, int index) {
     entrada_rip_t *removed_rip_entry = NULL;
-    if (table != NULL && index >= 0 && index < RIP_ROUTE_TABLE_SIZE) {
+    if ((table != NULL) && (index >= 0) && (index < RIP_ROUTE_TABLE_SIZE)) {
         removed_rip_entry = table->routes[index];
-        table[index] = NULL;
+        table->routes[index] = NULL;
     }
     return removed_rip_entry;
 }
@@ -394,7 +394,7 @@ int ipv4_route_table_find(rip_route_table_t *table, entrada_rip_t *entry_to_find
     entrada_rip_t *entry = NULL;
     int route_index = -2;
 
-    if ((table = !NULL) && (entry_to_find != NULL)) {
+    if ((table != NULL) && (entry_to_find != NULL)) {
         route_index = -1;
         for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
             entry = table->routes[i];
@@ -515,9 +515,9 @@ int ripv2_route_table_write(rip_route_table_t *table, char *filename) {
                     filename, strerror(errno));
             return -1;
         }
-        fclose(entrada_file);
-        return num_entradas;
     }
+    fclose(entrada_file);
+    return num_entradas;
 }
 
 void ripv2_route_table_print(rip_route_table_t *table) {
