@@ -7,11 +7,6 @@
 #include <timerms.h>
 
 
-typedef struct rip_route_table {
-    entrada_rip_t *routes[RIP_ROUTE_TABLE_SIZE];
-} rip_route_table_t;
-
-
 /* ipv4_route_t * ipv4_route_create
  * ( ipv4_addr_t subnet, ipv4_addr_t mask, char* iface, ipv4_addr_t gw );
  *

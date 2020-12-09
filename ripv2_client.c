@@ -6,7 +6,7 @@
 #include <rawnet.h>
 #include <timerms.h>
 
-#include "ripv2.h"
+#include "rip_route_table.h"
 
 int main(int argc, char *argv[]) {
 
