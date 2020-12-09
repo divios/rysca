@@ -16,7 +16,6 @@
 
 typedef struct udp_layer {
     uint16_t source_port;
-    uint16_t destination_port;
     ipv4_layer_t *ipv4_layer;
 
 } udp_layer_t;
