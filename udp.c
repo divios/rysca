@@ -106,8 +106,8 @@ udp_recv(udp_layer_t *layer, long int timeout, uint8_t protocol, ipv4_addr_t sen
 
     }
 
-    uint16_t src_port = ntohs(udp_frame->src_port); //paso necesario, no deja hacerlo directamente en el memcpy
-    memcpy(port, &src_port, sizeof(uint16_t));
+    uint16_t recv_src_port = ntohs(udp_frame->src_port); //paso necesario, no deja hacerlo directamente en el memcpy
+    memcpy(port, &recv_src_port, sizeof(uint16_t));
     /*Si el payload recibido es menor que el tamaño del buffer,
     solo copiamos los datos necesarios al buffer. Por otro lado
     si nuestro buffer no es suficientemente grande para guardar
