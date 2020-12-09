@@ -26,30 +26,8 @@ extern ipv4_addr_t IPv4_MULTICAST_NETWORK;
 /* Logitud máxmima del nombre de un interfaz de red */
 #define IFACE_NAME_MAX_LENGTH 32
 
-typedef struct ipv4_layer {
-
-    eth_iface_t *iface;
-    ipv4_addr_t addr;
-    ipv4_addr_t network;
-    ipv4_route_table_t *routing_table;
-
-} ipv4_layer_t;
-
-typedef struct ipv4_message {
-
-    uint8_t version;
-    uint8_t type;
-    uint16_t total_len;
-    uint16_t id;
-    uint16_t flags_offset;
-    uint8_t TTL;
-    uint8_t protocol;
-    uint16_t checksum;
-    ipv4_addr_t source;
-    ipv4_addr_t dest;
-    unsigned char data[MRU];
-
-} ipv4_message_t;
+typedef struct ipv4_layer ipv4_layer_t;
+typedef struct ipv4_message ipv4_message_t;
 
 
 /* void ipv4_addr_str ( ipv4_addr_t addr, char* str );
@@ -100,6 +78,7 @@ int ipv4_str_addr(char *str, ipv4_addr_t addr);
  */
 uint16_t ipv4_checksum(unsigned char *data, int len);
 
+void ipv4_getAddr(ipv4_layer_t *layer, ipv4_addr_t addr);
 
 ipv4_layer_t *ipv4_open(char *file_config, char *file_conf_route);
 
