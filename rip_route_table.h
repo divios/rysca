@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #define RIP_ROUTE_TABLE_SIZE 25
+#define RIP_ROUTE_DEFAULT_TIME 180
 
 /* ipv4_route_t * ipv4_route_create
  * ( ipv4_addr_t subnet, ipv4_addr_t mask, char* iface, ipv4_addr_t gw );
@@ -37,7 +38,7 @@
  *   La función devuelve 'NULL' si no ha sido posible reservar memoria para
  *   crear la ruta.
  */
-entrada_rip_t *rip_route_create
+entrada_rip_t *ripv2_route_create
         (ipv4_addr_t subnet, ipv4_addr_t mask, ipv4_addr_t next_hop, int metric);
 
 
@@ -47,7 +48,7 @@ entrada_rip_t *rip_route_create
  *de todos los bytes. Luego sumamos si el ultimo byte es 1
  */
 
-int rip_switch_lookup(unsigned char mask);
+int ripv2_switch_lookup(unsigned char mask);
 
 
 /* int ipv4_route_lookup ( ipv4_route_t * route, ipv4_addr_t addr );
@@ -73,7 +74,7 @@ int rip_switch_lookup(unsigned char mask);
  *   La función devuelve '-1' si la dirección IPv4 no pertenece a la subred
  *   apuntada por la ruta especificada.
  */
-int rip_route_lookup(entrada_rip_t *route, ipv4_addr_t addr);
+int ripv2_route_lookup(entrada_rip_t *route, ipv4_addr_t addr);
 
 /* void ipv4_route_print ( ipv4_route_t * route );
  *
@@ -83,7 +84,7 @@ int rip_route_lookup(entrada_rip_t *route, ipv4_addr_t addr);
  * PARÁMETROS:
  *   'route': Ruta que se desea imprimir.
  */
-void rip_route_print(entrada_rip_t *route);
+void ripv2_route_print(entrada_rip_t *route);
 
 
 /* void ipv4_route_free ( ipv4_route_t * route );
@@ -95,7 +96,7 @@ void rip_route_print(entrada_rip_t *route);
  * PARÁMETROS:
  *   'route': Ruta que se desea liberar.
  */
-void rip_route_free(entrada_rip_t *route);
+void ripv2_route_free(entrada_rip_t *route);
 
 /* ipv4_route_t* ipv4_route_read ( char* filename, int linenum, char * line )
  *
@@ -115,7 +116,7 @@ void rip_route_free(entrada_rip_t *route);
  *   La función imprime un mensaje de error y devuelve NULL si se ha
  *   producido algún error al leer la ruta.
  */
-entrada_rip_t *rip_route_read(char *filename, int linenum, char *line);
+entrada_rip_t *ripv2_route_read(char *filename, int linenum, char *line);
 
 
 /* void ipv4_route_output ( ipv4_route_t * route, FILE * out );
@@ -136,11 +137,28 @@ entrada_rip_t *rip_route_read(char *filename, int linenum, char *line);
  *   La función devuelve '-1' si se ha producido algún error al escribir por
  *   la salida indicada.
  */
-int rip_route_output(entrada_rip_t *route, int header, FILE *out);
+int ripv2_route_output(entrada_rip_t *route, int header, FILE *out);
 
 
 typedef struct rip_route_table rip_route_table_t;
 
+
+/* ipv4_route_table_t * ipv4_route_table_create();
+ *
+ * DESCRIPCIÓN:
+ *   Esta función crea una tabla de rutas IPv4 vacía.
+ *
+ *   Esta función reserva memoria para la tabla de rutas creada, para
+ *   liberarla es necesario llamar a la función 'ipv4_route_table_free()'.
+ *
+ * VALOR DEVUELTO:
+ *   La función devuelve un puntero a la tabla de rutas creada.
+ *
+ * ERRORES:
+ *   La función devuelve 'NULL' si no ha sido posible reservar memoria para
+ *   crear la tabla de rutas.
+ */
+rip_route_table_t *ripv2_route_table_create();
 
 /* int ipv4_route_table_add ( ipv4_route_table_t * table,
  *                            ipv4_route_t * route );
@@ -161,9 +179,7 @@ typedef struct rip_route_table rip_route_table_t;
  *   especificada.
  */
 
-
-
-int rip_route_table_add(rip_route_table_t *table, entrada_rip_t *route);
+int ripv2_route_table_add(rip_route_table_t *table, entrada_rip_t *route);
 
 /* Esta estructura almacena la información básica sobre la ruta a una subred.
  * Incluye la dirección y máscara de la subred destino, el nombre del interfaz
@@ -177,5 +193,24 @@ int rip_route_table_add(rip_route_table_t *table, entrada_rip_t *route);
  * encaminamiento sea necesario añadir más campos a esta estructura, así como
  * modificar las funciones asociadas.
  */
+
+entrada_rip_t * ripv2_route_table_remove(rip_route_table_t *table, int index);
+
+entrada_rip_t * ripv2_route_table_lookup(rip_route_table_t *table, entrada_rip_t *entrada);
+
+entrada_rip_t * ripv2_route_table_get(rip_route_table_t *table, int index);
+
+int ipv4_route_table_find(rip_route_table_t * table, entrada_rip_t entry_to_find);
+
+void ripv2_route_table_free(rip_route_table_t *table);
+
+int ripv2_route_table_read(char * filename, rip_route_table_t* table);
+
+int ripv2_route_table_output(rip_route_table_t * table, FILE * out);
+
+int ripv2_route_table_write(rip_route_table_t table, char * filename);
+
+void ripv2_route_table_print(rip_route_table_t * entrada);
+
 
 #endif //RYSCA_UDP_ROUTE_TABLE_H

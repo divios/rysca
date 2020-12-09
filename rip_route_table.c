@@ -5,6 +5,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include "ripv2.h"
 
 /* ipv4_route_t * ipv4_route_create
  * ( ipv4_addr_t subnet, ipv4_addr_t mask, char* iface, ipv4_addr_t gw );
@@ -33,8 +34,8 @@
  *   La función devuelve 'NULL' si no ha sido posible reservar memoria para
  *   crear la ruta.
  */
-entrada_rip_t *rip_route_create
-        (ipv4_addr_t subnet, ipv4_addr_t mask, ipv4_addr_t next_hop, int metric ) {
+entrada_rip_t *ripv2_route_create
+        (ipv4_addr_t subnet, ipv4_addr_t mask, ipv4_addr_t next_hop, int metric) {
 
     entrada_rip_t *route = (entrada_rip_t *) malloc(sizeof(entrada_rip_t));
 
@@ -46,6 +47,7 @@ entrada_rip_t *rip_route_create
         memcpy(route->mask, mask, IPv4_ADDR_SIZE);
         memcpy(route->gw, next_hop, IPv4_ADDR_SIZE);
         route->metric = metric;
+        timerms_reset(&(route->timer), RIP_ROUTE_DEFAULT_TIME);
 
     }
 
@@ -59,7 +61,7 @@ entrada_rip_t *rip_route_create
  *de todos los bytes. Luego sumamos si el ultimo byte es 1
  */
 
-int rip_switch_lookup(unsigned char mask) {
+int ripv2_switch_lookup(unsigned char mask) {
     int c;
     for (c = 0; mask; mask >>= 1) {
         c += mask & 1;
@@ -91,7 +93,7 @@ int rip_switch_lookup(unsigned char mask) {
  *   La función devuelve '-1' si la dirección IPv4 no pertenece a la subred
  *   apuntada por la ruta especificada.
  */
-int rip_route_lookup(entrada_rip_t *route, ipv4_addr_t addr) {
+int ripv2_route_lookup(entrada_rip_t *route, ipv4_addr_t addr) {
     int prefix_length = 0;
 
     //recorremos los 4 octetos
@@ -115,7 +117,7 @@ int rip_route_lookup(entrada_rip_t *route, ipv4_addr_t addr) {
  * PARÁMETROS:
  *   'route': Ruta que se desea imprimir.
  */
-void rip_route_print(entrada_rip_t *route) {
+void ripv2_route_print(entrada_rip_t *route) {
     if (route != NULL) {
         char subnet_str[IPv4_STR_MAX_LENGTH];
         ipv4_addr_str(route->subnet, subnet_str);
@@ -139,7 +141,7 @@ void rip_route_print(entrada_rip_t *route) {
  * PARÁMETROS:
  *   'route': Ruta que se desea liberar.
  */
-void rip_route_free(entrada_rip_t *route) {
+void ripv2_route_free(entrada_rip_t *route) {
     if (route != NULL) {
         free(route);
     }
@@ -163,7 +165,7 @@ void rip_route_free(entrada_rip_t *route) {
  *   La función imprime un mensaje de error y devuelve NULL si se ha
  *   producido algún error al leer la ruta.
  */
-entrada_rip_t *rip_route_read(char *filename, int linenum, char *line) {
+entrada_rip_t *ripv2_route_read(char *filename, int linenum, char *line) {
     entrada_rip_t *route = NULL;
 
     char subnet_str[256];
@@ -218,7 +220,7 @@ entrada_rip_t *rip_route_read(char *filename, int linenum, char *line) {
     }
 
     /* Create new route with parsed parameters */
-    route = rip_route_create(subnet, mask, gateway, metric);
+    route = ripv2_route_create(subnet, mask, gateway, metric);
     if (route == NULL) {
         fprintf(stderr, "%s:%d: Error creating the new route\n",
                 filename, linenum);
@@ -246,7 +248,7 @@ entrada_rip_t *rip_route_read(char *filename, int linenum, char *line) {
  *   La función devuelve '-1' si se ha producido algún error al escribir por
  *   la salida indicada.
  */
-int rip_route_output(entrada_rip_t *route, int header, FILE *out) {
+int ripv2_route_output(entrada_rip_t *route, int header, FILE *out) {
     int err;
 
     if (header == 0) {
@@ -297,7 +299,7 @@ struct rip_route_table {
  *   La función devuelve 'NULL' si no ha sido posible reservar memoria para
  *   crear la tabla de rutas.
  */
-rip_route_table_t *rip_route_table_create() {
+rip_route_table_t *ripv2_route_table_create() {
     rip_route_table_t *table;
 
     table = (rip_route_table_t *) malloc(sizeof(struct rip_route_table));
@@ -333,7 +335,7 @@ rip_route_table_t *rip_route_table_create() {
 
 
 
-int rip_route_table_add(rip_route_table_t *table, entrada_rip_t *route) {
+int ripv2_route_table_add(rip_route_table_t *table, entrada_rip_t *route) {
     int route_index = -1;
 
     if (table != NULL) {
@@ -352,5 +354,182 @@ int rip_route_table_add(rip_route_table_t *table, entrada_rip_t *route) {
 }
 
 
-//HASTA AQUI YO
+entrada_ripv2_t *ripv2_route_table_remove(rip_route_table_t *table, int index) {
+    entrada_rip_t *removed_rip_entry = NULL;
+    if (table != NULL && index >= 0 && index < RIP_ROUTE_TABLE_SIZE) {
+        removed_rip_entry = table->routes[index];
+        routes[index] = NULL;
+    }
+    return removed_rip_entry;
+}
+
+//probablemente ni se utilice
+entrada_ripv2_t *ripv2_route_table_lookup(rip_route_table_t *table, entrada_rip_t *entrada) {
+
+    entrada_rip_t *best_route = NULL;
+    int best_route_prefix = -1;
+
+    if (table != NULL) {
+        for (int i = 0, i<RIP_ROUTE_TABLE_SIZE, i++) {
+            entrada_rip_t *rip_entry = table->routes[i];
+            if (rip_entry != NULL) {
+                int route_i_lookup = ripv2_route_lookup(rip_entry, entrada);
+                if (route_i_lookup > best_route_prefix) {
+                    best_route_prefix = route_i_lookup;
+                    best_route = rip_entry;
+                }
+            }
+        }
+    }
+    return best_route;
+
+}
+
+entrada_rip_t *ripv2_route_table_get(rip_route_table_t *table, int index) {
+
+    entrada_rip_t *entry = NULL;
+    if ((table != NULL) && (index >= 0) && (index< RIP_ROUTE_TABLE_SIZE) ) {
+        entry = table->routes[index];
+
+    }
+    return entry;
+}
+
+int ipv4_route_table_find(rip_route_table_t *table, entrada_rip_t entry_to_find) {
+
+    entrada_rip_t *entry = NULL;
+    int route_index = -2;
+
+    if (table =! NULL && entry_to_find != NULL) {
+        route_index = -1;
+        for (int i =0, i < RIP_ROUTE_TABLE_SIZE, i++) {
+            entry = table->routes[i];
+            if (table =! NULL && memcmp(entry_to_find, entry, sizeof(entrada_rip_t)) == 0) {
+                route_index = i;
+                break;
+            }
+        }
+    }
+    return route_index;
+
+}
+
+void ripv2_route_table_free(rip_route_table_t *table) {
+
+    if (table != NULL) {
+        for (int i = 0; i<RIP_ROUTE_TABLE_SIZE, i++) {
+            entrada_rip_t entry = table->routes[i];
+            if (entry != NULL) {
+                table->routes[i] = NULL;
+                ripv2_route_free(entry);
+            }
+        }
+        free(table);
+    }
+}
+
+int ripv2_route_table_read(char *filename, rip_route_table_t *table) {
+    int read_routes = 0;
+
+    FILE *route_file = fopen(filename, "r");
+    if (route_file == NULL ) {
+        fprintf(stderr, "Error opening input rip Routes file \"%s\": %s.\n",
+                filename, strerror(errno));
+        return -1;
+    }
+
+    int linenum = 0;
+    char line_buf[1024];
+    int err = 0;
+
+    while ((!feof(route_file)) && (err == 0)) {
+
+        linenum++;
+
+        /* Read next line of file */
+        char *line = fgets(line_buf, 1024, routes_file);
+        if (line == NULL) {
+            break;
+        }
+
+        /* If this line is empty or a comment, just ignore it */
+        if ((line_buf[0] == '\n') || (line_buf[0] == '#')) {
+            err = 0;
+            continue;
+        }
+
+        /* Parse route from line */
+        entrada_rip_t *new_entry = ripv2_route_read(filename, linenum, line);
+        if (new_entry == NULL) {
+            err = -1;
+            break;
+        }
+
+        /* Add new route to Route Table */
+        if (table != NULL) {
+            err = ripv2_route_table_add(table, new_entry);
+            if (err >= 0) {
+                err = 0;
+                read_routes++;
+            }
+        }
+    } /* while() */
+
+    if (err == -1) {
+        read_routes = -1;
+    }
+
+    /* Close IP Route Table file */
+    fclose(route_file);
+
+    return read_routes;
+
+
+}
+
+int ripv2_route_table_output(rip_route_table_t *table, FILE *out) {
+    int err;
+
+    if (table != NULL ) {
+        for (int i = 0, i< RIP_ROUTE_TABLE_SIZE, i++) {
+            entrada_rip_t entry = table->routes[i];
+            if (entry != NULL) {
+                err = ripv2_route_output(entry, i, out);
+                if (err == -1) {
+                    return -1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+int ripv2_route_table_write(rip_route_table_t table, char *filename) {
+    int num_entradas = 0;
+    FILE *entrada_file = fopen(filename, "w");
+    if (entrada_file == NULL) {
+        fprintf(stderr, "Error opening input file \"%s\": %s.\n",
+                filename, strerror(errno));
+        return -1;
+    }
+    fprintf(entrada_file, "# %s\n", filename);
+    fprintf(entrada_file, "#\n");
+    if (table != NULL) {
+        num_entradas = ripv2_route_table_output(table, entrada_file);
+        if (num_entradas == -1) {
+            fprintf(stderr, "Error writing file \"%s\": %s.\n",
+                    filename, strerror(errno));
+            return -1;
+        }
+        fclose(entrada_file);
+        return num_entradas;
+    }
+}
+
+void ripv2_route_table_print(rip_route_table_t *table) {
+    if (entrada = NULL) {
+        ripv2_route_table_output(table, stdout);
+    }
+}
+
 

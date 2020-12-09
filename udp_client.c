@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     //el nombre del archivo de text de la config y routas
     //y la ip al que se le debe enviar el mensaje
 
-    if ((argc <= 6) || (argc > 7)) { ;
+    if ((argc <= 6) || (argc > 7)) {
         printf("       <string.txt>: Nombre del archivo config.txt\n");
         printf("       <string.txt>: Nombre del archivo route_table.txt\n");
         printf("        <ip>: ip del pc del cual necesitas su MAC\n");
