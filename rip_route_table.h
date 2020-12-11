@@ -51,4 +51,6 @@ rip_route_table_t* ripv2_route_table_get_expired(rip_route_table_t * table);
 
 void ripv2_route_table_remove_expired(rip_route_table_t *table, rip_route_table_t *expired);
 
+int ripv2_timeleft(rip_route_table_t *table);
+
 #endif //RYSCA_UDP_ROUTE_TABLE_H

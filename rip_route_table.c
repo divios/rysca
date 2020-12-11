@@ -552,3 +552,16 @@ void ripv2_route_table_remove_expired(rip_route_table_t *table, rip_route_table_
 
     }
 }
+
+int ripv2_timeleft(rip_route_table_t *table){
+    int i;
+    long int min_time = -1;
+    for(i = 0; i<RIP_ROUTE_TABLE_SIZE; i++){
+        if(table -> routes[i] != NULL){
+            if(min_time == -1 || timerms_left(&(table-> routes[i]->timer)) < min_time) {
+                min_time = timerms_left(&(table -> routes[i]->timer));
+            }
+        }
+    }
+    return min_time;
+}

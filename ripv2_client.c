@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <libgen.h>
 #include <rawnet.h>
-#include <timerms.h>
 
 #include "rip_route_table.h"
 
@@ -34,7 +33,7 @@ int main(int argc, char *argv[]) {
     }
 
     while (1) {
-        long int min_time = 0;//TODO: timeleft
+        long int min_time = ripv2_timeleft(rip_table); /* Si tabla esta vacia, -1, esperamos infinito */
         ripv2_msg_t payload;
         uint16_t *port_out = malloc(sizeof(uint16_t));
         ipv4_addr_t myIP;
@@ -47,13 +46,13 @@ int main(int argc, char *argv[]) {
             //TODO: procesar el mensaje segun si es request o response
         }
 
-        /*Devuelve las entradas con timers expirados */
+        /* Devuelve las entradas con timers expirados */
         rip_route_table_t *expired = ripv2_route_table_get_expired(rip_table);
 
         ripv2_route_table_remove_expired(rip_table, expired);
-
         ripv2_route_table_free(expired);
 
+        ripv2_route_table_write(rip_table, route_table_name); /* Actualizamos el fichero */
 
     }
 
