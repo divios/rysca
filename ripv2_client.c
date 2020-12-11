@@ -5,7 +5,7 @@
 #include <libgen.h>
 #include <rawnet.h>
 
-#include "rip_route_table.h"
+#include "ripv2_route_table.h"
 
 int main(int argc, char *argv[]) {
 

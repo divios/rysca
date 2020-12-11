@@ -7,7 +7,7 @@
 
 #include "udp.h"
 #include <timerms.h>
-#include "rip_route_table.h"
+#include "ripv2_route_table.h"
 
 #define UNUSED 0x0000
 #define DEAFULT_FAMILY_DIRECTION 2

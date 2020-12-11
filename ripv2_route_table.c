@@ -1,4 +1,4 @@
-#include "rip_route_table.h"
+#include "ripv2_route_table.h"
 
 #include <stdio.h>
 #include <stdlib.h>
