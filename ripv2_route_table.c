@@ -527,39 +527,39 @@ void ripv2_route_table_print(rip_route_table_t *table) {
     }
 }
 
-rip_route_table_t* ripv2_route_table_get_expired(rip_route_table_t * table) {
-    rip_route_table_t *expired = ripv2_route_table_create();
+void ripv2_inicialize_timers(int last_index, timerms_t *table_timers) {
 
-    if (table != NULL) {
-        for (int i=0; i<RIP_ROUTE_TABLE_SIZE; i++) {
-            entrada_rip_t *entry = table->routes[i];
-            if ((entry != NULL) && (timerms_left(&(entry->timer)) == 0) ) {
-                ripv2_route_table_add(expired, entry);
-            }
+    table_timers = malloc(sizeof(timerms_t * RIP_ROUTE_TABLE_SIZE));
+
+    if(last_index > 0 && last_index <= RIP_ROUTE_TABLE_SIZE) {
+        for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
+            table_timers[i] = NULL;
+            if (i < last_index) timerms_reset( &(table_timers[i]), RIP_ROUTE_DEFAULT_TIME);
         }
     }
 
-    return expired;
 }
 
-void ripv2_route_table_remove_expired(rip_route_table_t *table, rip_route_table_t *expired) {
+void ripv2_route_table_remove_expired(rip_route_table_t *table, timerms_t *timers) {
 
-    for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
-        entrada_rip_t *entry = expired->routes[i];
-        if (entry == NULL) break; /*En esta tabla a la que sea null es que no hay mas */
-        int index = ripv2_route_table_find(table, entry);
-        ripv2_route_table_remove(table, index);
+    if (table != NULL && timers != NULL) {
+        for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
+            if (timerms_left( &(timers[i])) == 0) {
+                timers[i] = NULL;
+                ripv2_route_table_remove(table, i);
+            }
 
+        }
     }
 }
 
-int ripv2_timeleft(rip_route_table_t *table){
+int ripv2_timeleft(timerms_t *table_timers){
     int i;
     long int min_time = -1;
     for(i = 0; i<RIP_ROUTE_TABLE_SIZE; i++){
-        if(table -> routes[i] != NULL){
-            if(min_time == -1 || timerms_left(&(table-> routes[i]->timer)) < min_time) {
-                min_time = timerms_left(&(table -> routes[i]->timer));
+        if(table_timers[i] != NULL){
+            if(min_time == -1 || timerms_left(&(table_timers[i]) < min_time) ) {
+                min_time = timerms_left(&(table_timers[i]));
             }
         }
     }
