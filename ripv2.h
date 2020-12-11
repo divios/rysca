@@ -23,8 +23,7 @@ typedef struct entrada_rip{
     ipv4_addr_t subnet;
     ipv4_addr_t mask;
     ipv4_addr_t gw;
-    int metric;
-    timerms_t timer;
+    uint32_t metric;
 
 } entrada_rip_t;
 
@@ -42,7 +41,6 @@ typedef struct ripv2_msg{
         rip_route_table_t *table;
 
 } ripv2_msg_t;
-
 
 
 #endif //RYSCA_RIPV2_H
