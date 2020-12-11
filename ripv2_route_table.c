@@ -35,7 +35,7 @@
  *   crear la ruta.
  */
 entrada_rip_t *ripv2_route_create
-        (ipv4_addr_t subnet, ipv4_addr_t mask, ipv4_addr_t next_hop, int metric) {
+        (ipv4_addr_t subnet, ipv4_addr_t mask, ipv4_addr_t next_hop, uint32_t metric) {
 
     entrada_rip_t *route = (entrada_rip_t *) malloc(sizeof(entrada_rip_t));
 
@@ -47,7 +47,6 @@ entrada_rip_t *ripv2_route_create
         memcpy(route->mask, mask, IPv4_ADDR_SIZE);
         memcpy(route->gw, next_hop, IPv4_ADDR_SIZE);
         route->metric = metric;
-        timerms_reset(&(route->timer), RIP_ROUTE_DEFAULT_TIME);
 
     }
 
@@ -527,25 +526,25 @@ void ripv2_route_table_print(rip_route_table_t *table) {
     }
 }
 
-void ripv2_inicialize_timers(int last_index, timerms_t *table_timers) {
+void ripv2_inicialize_timers(int last_index, timers_t *table_timers) {
 
-    table_timers = malloc(sizeof(timerms_t * RIP_ROUTE_TABLE_SIZE));
+    table_timers = malloc(sizeof(timers_t));
 
     if(last_index > 0 && last_index <= RIP_ROUTE_TABLE_SIZE) {
         for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
             table_timers[i] = NULL;
-            if (i < last_index) timerms_reset( &(table_timers[i]), RIP_ROUTE_DEFAULT_TIME);
+            if (i < last_index) timerms_reset( (table_timers[i]), RIP_ROUTE_DEFAULT_TIME);
         }
     }
 
 }
 
-void ripv2_route_table_remove_expired(rip_route_table_t *table, timerms_t *timers) {
+void ripv2_route_table_remove_expired(rip_route_table_t *table, timers_t *table_timers) {
 
     if (table != NULL && timers != NULL) {
         for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
-            if (timerms_left( &(timers[i])) == 0) {
-                timers[i] = NULL;
+            if (timerms_left(table_timers[i]) == 0) {
+                free(table_timers[i]);
                 ripv2_route_table_remove(table, i);
             }
 
@@ -553,13 +552,13 @@ void ripv2_route_table_remove_expired(rip_route_table_t *table, timerms_t *timer
     }
 }
 
-int ripv2_timeleft(timerms_t *table_timers){
+int ripv2_timeleft(timers_t *table_timers){
     int i;
     long int min_time = -1;
     for(i = 0; i<RIP_ROUTE_TABLE_SIZE; i++){
         if(table_timers[i] != NULL){
-            if(min_time == -1 || timerms_left(&(table_timers[i]) < min_time) ) {
-                min_time = timerms_left(&(table_timers[i]));
+            if(min_time == -1 || timerms_left(table_timers[i]) < min_time ) {
+                min_time = timerms_left(table_timers[i]);
             }
         }
     }

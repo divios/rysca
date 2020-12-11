@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     uint16_t port_in = atoi(argv[4]); /* Lo suyo es harcodearlo a RIP_PORT 55 */
 
     rip_route_table_t *table = NULL;
-    timerms_t *timers = NULL;
+    timers_t *timers = NULL;
 
     int last_index = ripv2_route_table_read(rip_route_table_name, table);
     ripv2_inicialize_timers(last_index, timers);
