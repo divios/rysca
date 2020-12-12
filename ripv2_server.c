@@ -40,16 +40,14 @@ int main(int argc, char *argv[]) {
         long int min_time, n;
         ripv2_msg_t payload;
         uint16_t *port_out;
-        ipv4_addr_t myIP;
+        ipv4_addr_t sender;
 
         min_time = ripv2_timeleft(timers); /* Si tabla esta vacia, -1, esperamos infinito */
         port_out = malloc(sizeof(uint16_t));
-        ipv4_getAddr(udp_layer->ipv4_layer,
-                     myIP); /* Tal y como esta declaradas las estructuras en el .h, no son accesibles */
 
-        n = udp_recv(udp_layer, min_time, UDP_PROTOCOL, myIP, port_out, (unsigned char *) &payload, sizeof(payload));
+        n = udp_recv(udp_layer, min_time, UDP_PROTOCOL, sender, port_out, (unsigned char *) &payload, sizeof(payload));
 
-        if (n > 0 && (*port_out == RIP_PORT)) {
+        if (n > 0 && (*port_out == RIP_PORT) ) {
             //TODO: procesar el mensaje segun si es request o response
         }
 
