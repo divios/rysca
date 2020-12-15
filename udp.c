@@ -31,7 +31,7 @@ udp_layer_t *udp_open(uint16_t src_port, char *ip_config, char *route_config) {
 }
 
 
-int udp_send(udp_layer_t *layer, ipv4_addr_t dst, uint16_t protocol, uint16_t port_out, unsigned char payload[], int payload_len) {
+int udp_send(udp_layer_t *layer, ipv4_addr_t dst, uint16_t port_out, unsigned char payload[], int payload_len) {
 
     if (layer == NULL) {
         printf("Hubo un fallo al inicializar el UDP layer\n");
@@ -54,7 +54,7 @@ int udp_send(udp_layer_t *layer, ipv4_addr_t dst, uint16_t protocol, uint16_t po
 
 
     //bonito asi parece ser
-    int bytes_send = ipv4_send(layer->ipv4_layer, dst, protocol, (unsigned char *) &udp_frame, udp_frame_len);
+    int bytes_send = ipv4_send(layer->ipv4_layer, dst, UDP_PROTOCOL, (unsigned char *) &udp_frame, udp_frame_len);
 
     if (bytes_send == -1) {
         //ya manda el warning el ipv4_send, no hace falta hacer printf
@@ -64,7 +64,7 @@ int udp_send(udp_layer_t *layer, ipv4_addr_t dst, uint16_t protocol, uint16_t po
 }
 
 int
-udp_recv(udp_layer_t *layer, long int timeout, uint8_t protocol, ipv4_addr_t sender, uint16_t *port, unsigned char *buffer,
+udp_recv(udp_layer_t *layer, long int timeout, ipv4_addr_t sender, uint16_t *port, unsigned char *buffer,
          int buffer_len) {
 
     //check_parametros_correctos()
@@ -91,7 +91,7 @@ udp_recv(udp_layer_t *layer, long int timeout, uint8_t protocol, ipv4_addr_t sen
         //escuchar_puerto()
         long int time_left = timerms_left(&timer_udp);
 
-        frame_len = ipv4_recv(layer->ipv4_layer, protocol, udp_buffer, sender, udp_buffer_len, time_left);
+        frame_len = ipv4_recv(layer->ipv4_layer, UDP_PROTOCOL, udp_buffer, sender, udp_buffer_len, time_left);
 
         if (frame_len == -1) {
             printf("Error al recibir el datagrama.\n");

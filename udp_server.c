@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
 
         printf("Escuchando a tramas udp\n");
 
-        payload_len = udp_recv(udp_layer, timeout, UDP_PROTOCOL, sender, port, buffer, UDP_PACKET_LEN);
+        payload_len = udp_recv(udp_layer, timeout, sender, port, buffer, UDP_PACKET_LEN);
 
         if (payload_len == -1) {
             printf("Error al recibir la trama\n");
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 
     printf("Enviando paquetes de vuelta\n");
 
-    udp_send(udp_layer, sender, UDP_PROTOCOL, *port, buffer, payload_len);
+    udp_send(udp_layer, sender, *port, buffer, payload_len);
 
     free(port);
 
