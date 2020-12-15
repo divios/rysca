@@ -23,13 +23,11 @@ int main(int argc, char *argv[]) {
     char *rip_route_table_name = argv[3];
 
     rip_route_table_t *table = ripv2_route_table_create();
-    timers_t timers;
+    timers_t *timers = malloc(sizeof(timers_t));
 
     int last_index = ripv2_route_table_read(rip_route_table_name, table);
 
     ripv2_inicialize_timers(last_index, timers);
-
-    timerms_reset (timers->list_timers[0], 500);
 
     udp_layer_t *udp_layer = udp_open(RIP_PORT, config_name, route_table_name);
     if (udp_layer == NULL) {
@@ -43,8 +41,8 @@ int main(int argc, char *argv[]) {
 
     while(1) {
 
-        printf("%li  ", timerms_left(& (timers.list_timers[0]) ));
-        printf("%li\n", timerms_left(& (timers.list_timers[1]) ));
+        printf("%li  ", timerms_left(& (timers->list_timers[0]) ));
+        printf("%li\n", timerms_left(& (timers->list_timers[1]) ));
         sleep(1);
     }
 

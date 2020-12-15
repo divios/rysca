@@ -526,12 +526,12 @@ void ripv2_route_table_print(rip_route_table_t *table) {
     }
 }
 
-void ripv2_inicialize_timers(int last_index, timers_t table_timers) {
+void ripv2_inicialize_timers(int last_index, timers_t *table_timers) {
 
     if(last_index > 0 && last_index <= RIP_ROUTE_TABLE_SIZE) {
         for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
             if (i < last_index) {
-                timerms_reset( (table_timers.list_timers[i]), RIP_ROUTE_DEFAULT_TIME);
+                timerms_reset( &(table_timers->list_timers[i]), RIP_ROUTE_DEFAULT_TIME);
             }
         }
     }
