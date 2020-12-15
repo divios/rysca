@@ -37,8 +37,6 @@ int main(int argc, char *argv[]) {
 
     ripv2_route_table_print(table);
 
-    timerms_left(timerstimers->list_timers[i]);
-
     while(1) {
 
         printf("%li  ", timerms_left(& (timers->list_timers[0]) ));
