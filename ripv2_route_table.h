@@ -8,7 +8,7 @@
 #include "ripv2.h"
 #include <stdio.h>
 
-#define RIP_ROUTE_DEFAULT_TIME 180
+#define RIP_ROUTE_DEFAULT_TIME 180000
 
 entrada_rip_t *ripv2_route_create
         (ipv4_addr_t subnet, ipv4_addr_t mask, ipv4_addr_t next_hop, uint32_t metric);

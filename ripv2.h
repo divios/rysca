@@ -43,7 +43,7 @@ typedef struct ripv2_msg{
 } ripv2_msg_t;
 
 typedef struct timers{
-    timerms_t *list_timers[RIP_ROUTE_TABLE_SIZE];
+    timerms_t list_timers[RIP_ROUTE_TABLE_SIZE];
 }timers_t;
 
 

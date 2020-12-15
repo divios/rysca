@@ -11,7 +11,7 @@
 int main(int argc, char *argv[]) {
 
 
-    if ((argc <= 6) || (argc > 7)) {
+    if ((argc <= 3) || (argc > 4)) {
         printf("       <string.txt>: Nombre del archivo config.txt\n");
         printf("       <string.txt>: Nombre del archivo route_table.txt\n");
         printf("       <string.txt>: Nombre del archivo rip_route_table.txt\n");
@@ -22,19 +22,31 @@ int main(int argc, char *argv[]) {
     char *route_table_name = argv[2];
     char *rip_route_table_name = argv[3];
 
-    rip_route_table_t *table = NULL;
-    timers_t *timers = NULL;
+    rip_route_table_t *table = ripv2_route_table_create();
+    timers_t timers;
 
     int last_index = ripv2_route_table_read(rip_route_table_name, table);
+
     ripv2_inicialize_timers(last_index, timers);
 
-    udp_layer_t *udp_layer = udp_open(port_in, config_name, route_table_name);
+    timerms_reset (timers->list_timers[0], 500);
+
+    udp_layer_t *udp_layer = udp_open(RIP_PORT, config_name, route_table_name);
     if (udp_layer == NULL) {
         printf("Fallo al abrir la interfaz");
         exit(-1);
     }
 
     ripv2_route_table_print(table);
+
+    timerms_left(timerstimers->list_timers[i]);
+
+    while(1) {
+
+        printf("%li  ", timerms_left(& (timers.list_timers[0]) ));
+        printf("%li\n", timerms_left(& (timers.list_timers[1]) ));
+        sleep(1);
+    }
 
     /*while (1) {
 
@@ -70,7 +82,7 @@ int main(int argc, char *argv[]) {
 
                             ripv2_route_table_add(rip_request->table, table->routes[i]);
 
-                            /* Si no esta en la tabla, mandar lo mismo pero metrica a 16 */
+                            // Si no esta en la tabla, mandar lo mismo pero metrica a 16
 
 
                             /*if (index == -1) {
