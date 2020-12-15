@@ -53,4 +53,6 @@ int ripv2_timeleft(timers_t *table_timers);
 
 void ripv2_inicialize_timers(int last_index, timers_t *table_timers);
 
+int ripv2_route_table_request_all_table(rip_route_table_t *table);
+
 #endif //RYSCA_UDP_ROUTE_TABLE_H

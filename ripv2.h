@@ -38,7 +38,7 @@ typedef struct ripv2_msg{
         uint8_t type;
         uint8_t version;
         uint16_t routing_domain; //unused
-        rip_route_table_t *table;
+        entrada_rip_t entrada[RIP_ROUTE_TABLE_SIZE]
 
 } ripv2_msg_t;
 

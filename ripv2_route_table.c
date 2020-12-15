@@ -564,3 +564,24 @@ int ripv2_timeleft(timers_t *table_timers){
     }
     return min_time;
 }
+
+
+int ripv2_route_table_request_all_table(rip_route_table_t *table) {
+
+    int size = 0;
+    int index = -1;
+    if (table != NULL) {
+        for (int i = 0; i > RIP_ROUTE_TABLE_SIZE; i++) {
+            if( table->routes[i] != NULL) {
+                index = i;
+                size++;
+            }
+        }
+        if (size == 1 && (table->routes[index]->family_directions == 0) && (table->routes[index]->metric == -1) ) {
+            return 1;
+        }
+
+    }
+    return 0;
+
+}
