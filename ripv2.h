@@ -13,7 +13,7 @@
 #define DEAFULT_FAMILY_DIRECTION 2
 #define RIPv2_TYPE_VERSION 2
 #define RIP_ROUTE_TABLE_SIZE 25
-#define RIP_PORT 55
+#define RIP_PORT 520
 
 
 typedef struct entrada_rip{
@@ -38,7 +38,7 @@ typedef struct ripv2_msg{
         uint8_t type;
         uint8_t version;
         uint16_t routing_domain; //unused
-        entrada_rip_t entrada[RIP_ROUTE_TABLE_SIZE]
+        entrada_rip_t entrada[RIP_ROUTE_TABLE_SIZE];
 
 } ripv2_msg_t;
 
