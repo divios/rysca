@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 
     ripv2_inicialize_timers(last_index, timers);
 
-    ripv2_route_table_print(table);
+    ripv2_route_table_output_with_timers(table, timers);
 
     udp_layer_t *udp_layer = udp_open(RIP_PORT, config_name, route_table_name);
     if (udp_layer == NULL) {
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
 
         min_time = ripv2_timeleft(table, *timers);
 
-        printf("%i\n", min_time);
+        printf("El menor timer es de %i\n", min_time);
 
         bytes = udp_recv(udp_layer, min_time, sender_ip, &port, (unsigned char *) &buffer, sizeof(buffer));
 
@@ -72,9 +72,6 @@ int main(int argc, char *argv[]) {
             msg.version = RIPv2_TYPE_VERSION;
             msg.routing_domain = UNUSED;
             index = 0;
-
-            char ip_src[IPv4_ADDR_SIZE];
-            char mask_src[IPv4_ADDR_SIZE];
 
             if (n_entries == 1 && buffer.entrada[0].family_directions == 0 &&
                 ripv2_is_infinite(ntohl(buffer.entrada[0].metric))) {
@@ -108,11 +105,6 @@ int main(int argc, char *argv[]) {
 
                 }
             }
-
-            ipv4_addr_str(sender_ip, ip_src);
-
-            printf("%s     \n", ip_src);
-
             udp_send(udp_layer, sender_ip, RIP_PORT, (unsigned char *) &msg,
                      sizeof(entrada_rip_t) * index + RIP_HEADER_SIZE);
 
@@ -121,36 +113,31 @@ int main(int argc, char *argv[]) {
             printf("Response recibido\n");
             printf("Numero de rutas recibidas es %i\n", n_entries);
 
+            entrada_rip_t entry;
+
             for (int i = 0; i < n_entries; i++) {
-                entrada_rip_t entry = buffer.entrada[i];
+                 entry = buffer.entrada[i];
 
                 //printf("Debug 1\n");
 
                 if (ripv2_is_infinite(ntohl(entry.metric))) continue;
 
-                printf("Debug 2\n");
+                //printf("Debug 2\n");
 
                 entry.metric = entry.metric + htonl(1);
 
-                char ip_src[IPv4_ADDR_SIZE];
-                char mask_src[IPv4_ADDR_SIZE];
-
-                ipv4_addr_str(entry.subnet, ip_src);
-                ipv4_addr_str(entry.mask, mask_src);
-
-                printf("%s     ", ip_src);
-                printf("%s\n", mask_src);
-
                 int aux = ripv2_route_table_find(table, &entry);
 
-                printf("La posicion de la ruta en la tabla es de %i\n", aux);
-
                 if (aux < 0 && !ripv2_is_infinite(ntohl(entry.metric))) { //si no existe esa ruta en nuestra tabla
-                    printf("Debug 3\n");
+                    //printf("Debug 3\n");
                     memcpy(entry.gw, sender_ip, sizeof(ipv4_addr_t));
                     entry.metric = ntohl(entry.metric);
                     entry.family_directions = ntohl(entry.family_directions);
-                    int added_index = ripv2_route_table_add(table, &entry);
+
+                    entrada_rip_t *entrada_aux = malloc(sizeof(entrada_rip_t));
+                    memcpy(entrada_aux, &entry, sizeof(entrada_rip_t));
+
+                    int added_index = ripv2_route_table_add(table, entrada_aux);
                     timerms_reset(&(timers->list_timers[added_index]), RIP_ROUTE_DEFAULT_TIME);
 
                 } else if (aux >= 0) { //si existe esa ruta en nuestra tabla
@@ -176,8 +163,7 @@ int main(int argc, char *argv[]) {
 
             }
 
-        ripv2_print_timers(table, timers);
-        ripv2_route_table_print(table);
+        ripv2_route_table_output_with_timers(table, timers);
         ripv2_route_table_write(table, rip_route_table_name);
 
     }
