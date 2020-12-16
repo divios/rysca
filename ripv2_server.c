@@ -53,14 +53,14 @@ int main(int argc, char *argv[]) {
         if (buffer.type == RIPv2_REQUEST) {
 
             ripv2_msg_t msg;
-            msg.type = 1;
+            msg.type = RIPv2_RESPONSE;
             msg.version = RIPv2_TYPE_VERSION;
             msg.routing_domain = UNUSED;
+            index = 0;
 
             if (n_entries == 1 && buffer.entrada[0].family_directions == 0 &&
                 ripv2_is_infinite(ntohl(buffer.entrada[0].metric))) {
 
-                index = 0;
                 for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
                     entrada_rip_t *entry = table->routes[i];
                     if (entry != NULL) {
@@ -71,10 +71,24 @@ int main(int argc, char *argv[]) {
                     }
                 }
 
-                udp_send(udp_layer, sender_ip, RIP_PORT, (unsigned char *) &msg, sizeof(entrada_rip_t) * index + RIP_HEADER_SIZE);
 
+            } else {
+
+                for (int i = 0; i < n_entries; i++) {
+                    entrada_rip_t entry = buffer.entrada[i];
+
+                    int aux = ripv2_route_table_find(table, &entry);
+                    if (aux >= 0) {
+                        entry.family_directions = htons(entry.family_directions);
+                        entry.metric = htonl(entry.metric);
+                        msg.entrada[index] = entry;
+                        index++;
+                    }
+                }
             }
 
+            udp_send(udp_layer, sender_ip, RIP_PORT, (unsigned char *) &msg,
+                     sizeof(entrada_rip_t) * index + RIP_HEADER_SIZE);
 
         }
 
