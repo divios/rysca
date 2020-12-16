@@ -288,7 +288,8 @@ int eth_recv
         eth_frame_ptr = (struct eth_frame *) eth_buffer;
         is_my_mac = (memcmp(eth_frame_ptr->dest_addr,
                             iface->mac_address, MAC_ADDR_SIZE) == 0);
-        is_multicast = ((eth_frame_ptr->dest_addr[0] & 0x20) == 0x20);
+        is_multicast = ((eth_frame_ptr->dest_addr[0] & 0x01) == 0x01);
+
         is_target_type = (ntohs(eth_frame_ptr->type) == type);
 
     } while (!( (is_my_mac || is_multicast) && is_target_type));
