@@ -47,12 +47,14 @@ int ripv2_route_table_write(rip_route_table_t *table, char * filename);
 
 void ripv2_route_table_print(rip_route_table_t * entrada);
 
-int ripv2_route_table_remove_expired(rip_route_table_t *table, timers_t table_timers);
+int ripv2_route_table_remove_expired(rip_route_table_t *table, timers_t *table_timers);
 
 int ripv2_timeleft(rip_route_table_t *table, timers_t table_timers);
 
 void ripv2_inicialize_timers(int last_index, timers_t *table_timers);
 
 int ripv2_is_infinite(uint32_t metric);
+
+void ripv2_print_timers(rip_route_table_t* table, timers_t *timers);
 
 #endif //RYSCA_UDP_ROUTE_TABLE_H

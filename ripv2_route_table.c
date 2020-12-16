@@ -171,7 +171,7 @@ entrada_rip_t *ripv2_route_read(char *filename, int linenum, char *line) {
     char subnet_str[256];
     char mask_str[256];
     char gw_str[256];
-    char str_metric[2];
+    char str_metric[4];
 
     /* Parse line: Format "<subnet> <mask> <iface> <gw>\n" */
     int params = sscanf(line, "%s %s %s %s\n",
@@ -261,7 +261,7 @@ int ripv2_route_output(entrada_rip_t *route, int header, FILE *out) {
     char subnet_str[IPv4_STR_MAX_LENGTH];
     char mask_str[IPv4_STR_MAX_LENGTH];
     char gw_str[IPv4_STR_MAX_LENGTH];
-    char metric_str[2];
+    char metric_str[4];
 
     if (route != NULL) {
         ipv4_addr_str(route->subnet, subnet_str);
@@ -442,12 +442,13 @@ int ripv2_route_table_read(char *filename, rip_route_table_t *table) {
 
         linenum++;
 
+
         /* Read next line of file */
         char *line = fgets(line_buf, 1024, route_file);
         if (line == NULL) {
             break;
         }
-
+;
         /* If this line is empty or a comment, just ignore it */
         if ((line_buf[0] == '\n') || (line_buf[0] == '#')) {
             err = 0;
@@ -530,14 +531,15 @@ void ripv2_route_table_print(rip_route_table_t *table) {
 
 
 
-int ripv2_route_table_remove_expired(rip_route_table_t *table, timers_t table_timers) {
+int ripv2_route_table_remove_expired(rip_route_table_t *table, timers_t *table_timers) {
 
     int removed = 0;
 
     if (table != NULL) {
         for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
             if (table->routes[i] != NULL) {
-                if (timerms_left( &(table_timers.list_timers[i])) == 0) {
+                if (timerms_left( &(table_timers->list_timers[i])) == 0 ||
+                        ripv2_is_infinite(table->routes[i]->metric)) {
                     ripv2_route_table_remove(table, i);
                     removed++;
                 }
@@ -568,6 +570,17 @@ void ripv2_inicialize_timers(int last_index, timers_t *table_timers) {
             if (i < last_index) {
                 timerms_reset( &(table_timers->list_timers[i]), RIP_ROUTE_DEFAULT_TIME);
             }
+        }
+    }
+
+}
+
+void ripv2_print_timers(rip_route_table_t* table, timers_t *timers) {
+
+    for(int i=0; i<RIP_ROUTE_TABLE_SIZE; i++) {
+        entrada_rip_t *entry = table->routes[i];
+        if(entry != NULL) {
+            printf("%li\n", timerms_left( &(timers->list_timers[i]) ));
         }
     }
 

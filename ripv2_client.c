@@ -44,10 +44,13 @@ int main(int argc, char *argv[]) {
 
     int n_routes = 0;
 
-    if (argc == 5) {
+    if (argc == 5) { //Si especifiamos tabla_routas_txt mandamos solo las que estan ahi
+
         char *rip_route_table_name = argv[4];
         rip_route_table_t *rip_table = ripv2_route_table_create();
         ripv2_route_table_read(rip_route_table_name, rip_table);
+
+        ripv2_route_table_print(rip_table);
 
         for (int i=0; i < RIP_ROUTE_TABLE_SIZE; i++) {
             entrada_rip_t *entry = rip_table->routes[i];
@@ -62,7 +65,7 @@ int main(int argc, char *argv[]) {
     }
 
 
-    else {
+    else { //si no especificamos nada perdimos por toda la tabla
 
         entrada_rip_t request_all;
         request_all.family_directions = UNUSED;
@@ -70,7 +73,7 @@ int main(int argc, char *argv[]) {
         memcpy(request_all.gw, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t));
         memcpy(request_all.mask, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t));
         memcpy(request_all.subnet, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t));
-        request_all.metric = htonl(16);
+        request_all.metric = htonl(-1);
 
         msg.entrada[0] = request_all;
         n_routes++;
