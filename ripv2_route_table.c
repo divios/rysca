@@ -395,11 +395,12 @@ int ripv2_route_table_find(rip_route_table_t *table, entrada_rip_t *entry_to_fin
     entrada_rip_t *entry = NULL;
     int route_index = -2;
 
-    if ((table != NULL) && (entry_to_find != NULL)) {
+    if ((table != NULL)) {
         route_index = -1;
         for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
             entry = table->routes[i];
-            if (table != NULL && memcmp(entry_to_find, entry, sizeof(entrada_rip_t)) == 0) {
+            if (table != NULL && memcmp(entry_to_find->subnet, entry->subnet, sizeof(ipv4_addr_t)) == 0 &&
+                    memcmp(entry_to_find->mask, entry->mask, sizeof(ipv4_addr_t)) == 0) {
                 route_index = i;
                 break;
             }
