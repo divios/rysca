@@ -79,8 +79,6 @@ int main(int argc, char *argv[]) {
 
                     int aux = ripv2_route_table_find(table, &entry);
                     if (aux >= 0) {
-                        entry.family_directions = htons(entry.family_directions);
-                        entry.metric = htonl(entry.metric);
                         msg.entrada[index] = entry;
                         index++;
                     }
