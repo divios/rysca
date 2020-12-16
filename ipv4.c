@@ -285,7 +285,6 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char buffer[], ipv
             printf("No se recibio el paquete\n");
             return -1;
         } else if (frame_len == 0) {
-            printf("TIMEOUT\n");
             return 0;
         }
             //si por alguna razon el buffer que nos devuelve es menor que
