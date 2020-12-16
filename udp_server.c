@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     }
 
     unsigned char buffer[UDP_PACKET_LEN];
-    uint16_t *port = malloc(sizeof(uint16_t));
+    uint16_t port;
     ipv4_addr_t sender;
 	int payload_len;
     //ipv4_addr_t src_addr;
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
 
         printf("Escuchando a tramas udp\n");
 
-        payload_len = udp_recv(udp_layer, timeout, sender, port, buffer, UDP_PACKET_LEN);
+        payload_len = udp_recv(udp_layer, timeout, sender, &port, buffer, UDP_PACKET_LEN);
 
         if (payload_len == -1) {
             printf("Error al recibir la trama\n");
@@ -64,9 +64,9 @@ int main(int argc, char *argv[]) {
 
     printf("Enviando paquetes de vuelta\n");
 
-    udp_send(udp_layer, sender, *port, buffer, payload_len);
+	printf("%i\n", port);
 
-    free(port);
+    udp_send(udp_layer, sender, port, buffer, payload_len);
 
     udp_close(udp_layer);
 }
