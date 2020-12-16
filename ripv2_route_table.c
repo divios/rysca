@@ -5,6 +5,7 @@
 #include <string.h>
 #include <errno.h>
 #include <timerms.h>
+#include <arpa/inet.h>
 
 
 /* ipv4_route_t * ipv4_route_create
@@ -41,7 +42,7 @@ entrada_rip_t *ripv2_route_create
 
     if ((route != NULL) &&
         (subnet != NULL) && (mask != NULL) && (next_hop != NULL)) {
-        route->family_directions = DEAFULT_FAMILY_DIRECTION;
+        route->family_directions = DEFAULT_FAMILY_DIRECTION;
         route->route_label = UNUSED;
         memcpy(route->subnet, subnet, IPv4_ADDR_SIZE);
         memcpy(route->mask, mask, IPv4_ADDR_SIZE);
@@ -526,6 +527,39 @@ void ripv2_route_table_print(rip_route_table_t *table) {
     }
 }
 
+
+
+int ripv2_route_table_remove_expired(rip_route_table_t *table, timers_t table_timers) {
+
+    int removed = 0;
+
+    if (table != NULL) {
+        for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
+            if (table->routes[i] != NULL) {
+                if (timerms_left( &(table_timers.list_timers[i])) == 0) {
+                    ripv2_route_table_remove(table, i);
+                    removed++;
+                }
+            }
+        }
+    }
+    return removed;
+}
+
+int ripv2_timeleft(rip_route_table_t *table, timers_t table_timers){
+
+    long int min_time = -1;
+    for(int i = 0; i<RIP_ROUTE_TABLE_SIZE; i++){
+        if(table->routes[i] != NULL){
+            if(min_time == -1 || timerms_left( &(table_timers.list_timers[i]) ) < min_time ) {
+                min_time = timerms_left( &(table_timers.list_timers[i]) );
+            }
+        }
+    }
+    return min_time;
+}
+
+
 void ripv2_inicialize_timers(int last_index, timers_t *table_timers) {
 
     if(last_index > 0 && last_index <= RIP_ROUTE_TABLE_SIZE) {
@@ -538,49 +572,7 @@ void ripv2_inicialize_timers(int last_index, timers_t *table_timers) {
 
 }
 
-/*void ripv2_route_table_remove_expired(rip_route_table_t *table, timers_t table_timers) {
 
-    if (table != NULL && table_timers != NULL) {
-        for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
-            if (timerms_left(table_timers->list_timers[i]) == 0) {
-                free(table_timers->list_timers[i]);
-                ripv2_route_table_remove(table, i);
-            }
-
-        }
-    }
-} */
-
-/*int ripv2_timeleft(timers_t *table_timers){
-    int i;
-    long int min_time = -1;
-    for(i = 0; i<RIP_ROUTE_TABLE_SIZE; i++){
-        if(table_timers->list_timers[i] != NULL){
-            if(min_time == -1 || timerms_left(table_timers->list_timers[i]) < min_time ) {
-                min_time = timerms_left(table_timers->list_timers[i]);
-            }
-        }
-    }
-    return min_time;
-}*/
-
-
-int ripv2_route_table_request_all_table(rip_route_table_t *table) {
-
-    int size = 0;
-    int index = -1;
-    if (table != NULL) {
-        for (int i = 0; i > RIP_ROUTE_TABLE_SIZE; i++) {
-            if( table->routes[i] != NULL) {
-                index = i;
-                size++;
-            }
-        }
-        if (size == 1 && (table->routes[index]->family_directions == 0) && (table->routes[index]->metric == -1) ) {
-            return 1;
-        }
-
-    }
-    return 0;
-
+int ripv2_is_infinite(uint32_t metric) {
+    return (metric < 0 || metric > 15);
 }
