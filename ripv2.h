@@ -10,10 +10,10 @@
 #include "ripv2_route_table.h"
 
 #define UNUSED 0x0000
-#define DEAFULT_FAMILY_DIRECTION 2
+#define DEFAULT_FAMILY_DIRECTION 2
 #define RIPv2_TYPE_VERSION 2
-#define RIPv2_REPLY 1
-#define RIPv2_REQUEST 2
+#define RIPv2_RESPONSE 2
+#define RIPv2_REQUEST 1
 #define RIP_ROUTE_TABLE_SIZE 25
 #define RIP_PORT 520
 #define RIP_HEADER_SIZE 4
