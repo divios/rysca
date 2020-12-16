@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
         memcpy(request_all.gw, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t));
         memcpy(request_all.mask, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t));
         memcpy(request_all.subnet, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t));
-        request_all.metric = htonl(-1);
+        request_all.metric = htonl(16);
 
         msg.entrada[0] = request_all;
         n_routes++;
