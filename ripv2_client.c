@@ -16,6 +16,7 @@ int main(int argc, char *argv[]) {
         printf("       <string.txt>: Nombre del archivo config.txt\n");
         printf("       <string.txt>: Nombre del archivo route_table.txt\n");
         printf("       <ipv4>: ip del servidor a enviar request\n");
+        printf("       <string.txt>: Nombre del archivo ripv2_route_table(OPCIONAL)\n");
         exit(-1);
     }
 
@@ -62,6 +63,7 @@ int main(int argc, char *argv[]) {
 
 
     else {
+
         entrada_rip_t request_all;
         request_all.family_directions = UNUSED;
         request_all.route_label = UNUSED;
@@ -82,7 +84,7 @@ int main(int argc, char *argv[]) {
 
     int bytes = udp_recv(udp_layer, -1, ip_addr, &port, (unsigned char *) &msg_recv, sizeof(msg_recv));
 
-	if ( port == RIP_PORT && msg_recv.type != RIPv2_REPLY) {
+	if ( port == RIP_PORT && msg_recv.type != RIPv2_RESPONSE) {
         printf("baya\n");
         exit(-1);
     }
