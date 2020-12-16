@@ -1,4 +1,4 @@
-
+#include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -35,91 +35,52 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
-    ripv2_route_table_print(table);
+    while (1) {
 
-    while(1) {
+        ipv4_addr_t sender_ip;
+        uint16_t port;
+        ripv2_msg_t buffer;
+        int min_time, bytes, n_entries, index;
 
-        printf("%li  ", timerms_left(& (timers->list_timers[0]) ));
-        printf("%li\n", timerms_left(& (timers->list_timers[1]) ));
-        sleep(1);
-    }
+        min_time = ripv2_timeleft(table, *timers);
 
-    /*while (1) {
+        bytes = udp_recv(udp_layer, min_time, sender_ip, &port, (unsigned char *) &buffer, sizeof(buffer));
 
-        long int min_time, n;
-        ripv2_msg_t payload;
-        uint16_t *port_out;
-        ipv4_addr_t sender, myIp;
+        n_entries = (bytes - RIP_HEADER_SIZE) / sizeof(entrada_rip_t);
 
-        min_time = ripv2_timeleft(timers); // Si tabla esta vacia, -1, esperamos infinito
-        port_out = malloc(sizeof(uint16_t));
+        if (port != RIP_PORT || n_entries == 0) continue; //Añadir que sea de nuestra propia subred
 
-        n = udp_recv(udp_layer, min_time, sender, port_out, (unsigned char *) &payload, sizeof(payload));
+        if (buffer.type == RIPv2_REQUEST) {
 
+            ripv2_msg_t msg;
+            msg.type = 1;
+            msg.version = RIPv2_TYPE_VERSION;
+            msg.routing_domain = UNUSED;
 
-        if (n > 0 && (*port_out == RIP_PORT) && memcmp(sender)  ) {
-            //TODO: procesar el mensaje segun si es request o response
-            ripv2_msg_t *ripv2_msg = (ripv2_msg_t *) payload;
+            if (n_entries == 1 && buffer.entrada[0].family_directions == 0 &&
+                ripv2_is_infinite(ntohl(buffer.entrada[0].metric))) {
 
-            if (ripv2_msg->type == 1) { // request
-                ripv2_msg_t *rip_request = malloc(sizeof(ripv2_msg_t));
-                if ( ripv2_route_table_request_all_table(ripv2_msg->table) == 1 ) { // Toda la tabla
-
-                    rip_request->table = table;
-
-                }
-                else{
-                    rip_route_table_t *received_table = ripv2_msg->table;
-
-                    for (int i = 0; i>RIP_ROUTE_TABLE_SIZE; i++) {
-                        if (received_table->routes[i] != NULL) {
-
-                            int index = ripv2_route_table_find(table, received_table->routes[i]);
-
-                            ripv2_route_table_add(rip_request->table, table->routes[i]);
-
-                            // Si no esta en la tabla, mandar lo mismo pero metrica a 16
-
-
-                            /*if (index == -1) {
-                                ripv2_route_table_add(table, request_table->routes[i]);
-                            }
-                            else{
-                                if( request_table->routes[i]->metric < table->routes[i]->metric ) {
-                                    memcpy(table->routes[i]->gw, sender, sizeof(ipv4_addr_t));
-                                    table->routes[i]->metric = (request_table->routes[i]->metric + 1);
-                                }
-                            }*/ /*
-
-
-                        }
+                index = 0;
+                for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
+                    entrada_rip_t *entry = table->routes[i];
+                    if (entry != NULL) {
+                        entry->family_directions = htons(entry->family_directions);
+                        entry->metric = htonl(entry->metric);
+                        msg.entrada[index] = *(entry);
+                        index++;
                     }
-
-                    rip_request->table = requested_table;
-
-
                 }
-                // Enviamos el mensaje
-                rip_request->type = 2;
-                rip_request->version = RIPv2_TYPE_VERSION;
-                rip_request->routing_domain = UNUSED;
-                udp_send(udp_layer, sender, UDP_PROTOCOL, port_out, (unsigned char *) rip_request, sizeof(rip_request));
-                free(rip_request);
 
-            } else if ( ripv2_msg->type == 2 ) {
-
+                udp_send(udp_layer, sender_ip, RIP_PORT, (unsigned char *) &msg, sizeof(entrada_rip_t) * index + RIP_HEADER_SIZE);
 
             }
 
-            // Devuelve las entradas con timers expirados
-            ripv2_route_table_remove_expired(table, timers);
 
-            ripv2_route_table_write(table, route_table_name); // Actualizamos el fichero
-
-        } */
-
+        }
 
 
     }
+
+}
 
 
