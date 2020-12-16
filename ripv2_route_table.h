@@ -57,4 +57,8 @@ int ripv2_is_infinite(uint32_t metric);
 
 void ripv2_print_timers(rip_route_table_t* table, timers_t *timers);
 
+int ripv2_route_output_with_timers(entrada_rip_t *route, int header, FILE *out, timerms_t timer);
+
+int ripv2_route_table_output_with_timers(rip_route_table_t *table, timers_t *timers);
+
 #endif //RYSCA_UDP_ROUTE_TABLE_H

@@ -394,7 +394,6 @@ int ripv2_route_table_find(rip_route_table_t *table, entrada_rip_t *entry_to_fin
 
     entrada_rip_t *entry = NULL;
     int route_index = -2;
-
     if ((table != NULL)) {
         route_index = -1;
         for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
@@ -500,6 +499,57 @@ int ripv2_route_table_output(rip_route_table_t *table, FILE *out) {
     }
     return 0;
 }
+
+int ripv2_route_output_with_timers(entrada_rip_t *route, int header, FILE *out, timerms_t timer) {
+    int err;
+
+    if (header == 0) {
+        err = fprintf(out, "# SubnetAddr  \tSubnetMask  \tGateway  \tMetric  \tTimer\n");
+        if (err < 0) {
+            return -1;
+        }
+    }
+
+    char subnet_str[IPv4_STR_MAX_LENGTH];
+    char mask_str[IPv4_STR_MAX_LENGTH];
+    char gw_str[IPv4_STR_MAX_LENGTH];
+    char metric_str[4];
+
+    if (route != NULL) {
+        ipv4_addr_str(route->subnet, subnet_str);
+        ipv4_addr_str(route->mask, mask_str);
+        ipv4_addr_str(route->gw, gw_str);
+        sprintf(metric_str, "%d", route->metric);
+
+        err = fprintf(out, "%-15s\t%-15s\t%s\t%-15s\t%li\n",
+                      subnet_str, mask_str, gw_str, metric_str, timerms_left(&timer));
+        if (err < 0) {
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+int ripv2_route_table_output_with_timers(rip_route_table_t *table, timers_t *timers) {
+    int err;
+
+    if (table != NULL) {
+        for (int i = 0; i<RIP_ROUTE_TABLE_SIZE; i++) {
+            entrada_rip_t *entry = table->routes[i];
+            if (entry != NULL) {
+                err = ripv2_route_output_with_timers(entry, i, stdout, timers->list_timers[i]);
+                if (err == -1) {
+                    return -1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+
+
 
 int ripv2_route_table_write(rip_route_table_t *table, char *filename) {
     int num_entradas = 0;
