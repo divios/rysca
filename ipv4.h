@@ -78,18 +78,21 @@ int ipv4_str_addr(char *str, ipv4_addr_t addr);
  */
 uint16_t ipv4_checksum(unsigned char *data, int len);
 
+void ipv4_getAddr(ipv4_layer_t *layer, ipv4_addr_t addr);
 
 ipv4_layer_t *ipv4_open(char *file_config, char *file_conf_route);
 
 
 int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol, unsigned char *payload, int payload_len);
 
+int is_multicast(ipv4_addr_t addr);
+
 int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char payload[], ipv4_addr_t sender, int payload_len,
               long int timeout);
 
 int ipv4_close(ipv4_layer_t *ipv4_layer);
 
-int is_multicast(ipv4_addr_t addr);
+
 
 #endif /* _IPv4_H */
 

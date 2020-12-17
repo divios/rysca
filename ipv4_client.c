@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
     ipv4_addr_t src;
 
     printf("Escuchando a trama de vuelta\n");
-    int payload_len = ipv4_recv(ip_layer, 0X45, buffer, src, MRU, -1);
+    int payload_len = ipv4_recv(ip_layer, 0X45, buffer, src, MRU, 2000);
 
     if (payload_len == -1) {
         printf("Error al recibir la trama\n");

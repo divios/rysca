@@ -22,7 +22,7 @@ typedef struct ipv4_layer {
 /* Dirección IPv4 a cero: "0.0.0.0" */
 ipv4_addr_t IPv4_ZERO_ADDR = {0, 0, 0, 0};
 ipv4_addr_t IPv4_MULTICAST_ADDR = {224, 0, 0, 0};
-ipv4_addr_t IPv4_MULTICAST_NETWORK = [240, 0, 0, 0];
+ipv4_addr_t IPv4_MULTICAST_NETWORK = {240, 0, 0, 0};
 //Estructura para la trama IPV4 (CONSULTAR)
 typedef struct ipv4_message {
 
@@ -134,6 +134,12 @@ uint16_t ipv4_checksum(unsigned char *data, int len) {
     return (uint16_t) sum;
 }
 
+void ipv4_getAddr(ipv4_layer_t *layer, ipv4_addr_t addr) {
+    if (layer != NULL) {
+        memcpy(addr, layer->addr, sizeof(ipv4_addr_t));
+    }
+}
+
 ipv4_layer_t *ipv4_open(char *file_config, char *file_conf_route) {
 
     //Reservamos memoria para el nombre de la interfaz y la struct
@@ -163,7 +169,7 @@ ipv4_layer_t *ipv4_open(char *file_config, char *file_conf_route) {
 
 int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
               unsigned char *payload, int payload_len) {
-
+    //int is_multicast;
     //Hacemos comprobaciones de los datos
     if (layer == NULL) {
         fprintf(stderr, "Error en el IPv4 Layer.\n");
@@ -180,13 +186,20 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
     }
 
     //Miramos en las tablas el siguiente salto para llegar a dst
-    ipv4_route_t *next_jump = ipv4_route_table_lookup(layer->routing_table, dst);
+    //if (memcmp(dst, IPv4_MULTICAST_ADDR, sizeof(IPv4_ADDR_SIZE)) == 0) {
+      //  is_broadcast = 1;
+    //}
+
+    //si no es broadcast comprobamos el siguiente salto
+    //if (!is_broadcast) {
+        ipv4_route_t *next_jump = ipv4_route_table_lookup(layer->routing_table, dst);
 
 
-    if (next_jump->gateway_addr == NULL) {
-        fprintf(stderr, "No hay ruta disponible para transmitir los datos.\n");
-        return -1;
-    }
+        if (next_jump->gateway_addr == NULL) {
+            fprintf(stderr, "No hay ruta disponible para transmitir los datos.\n");
+            return -1;
+        }
+    //}
         //Si nos devuelve 0.0.0.0, es que no hay siguiente salto y la ip esta en nuestra
         //subred, por lo tanto el siguiente salto es el propio dst
     else if (memcmp(next_jump->gateway_addr, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t)) == 0) {
@@ -211,14 +224,28 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
     ipv4_frame.checksum = IPV4_CHECKSUM_INIT;
     memcpy(ipv4_frame.source, layer->addr, sizeof(ipv4_addr_t));
     memcpy(ipv4_frame.dest, dst, sizeof(ipv4_addr_t));
+
+    ipv4_route_t multicast;
+    memcpy(multicast.subnet_addr, IPv4_MULTICAST_ADDR, sizeof(ipv4_addr_t));
+    memcpy(multicast.subnet_mask, IPv4_MULTICAST_NETWORK, sizeof(ipv4_addr_t));
+    if (ipv4_route_lookup(&multicast, dst) == 4 ) ipv4_frame.TTL = 1;
+
     ipv4_frame.checksum = htons(ipv4_checksum((unsigned char *) &ipv4_frame, IPV4_HEADER_SIZE));
 
     memcpy(ipv4_frame.data, payload, payload_len);
-    //Mandamos ARP resolve para conocer la MAC del siguiente salto
-    if (arp_resolve(layer->iface, layer->addr, next_jump->gateway_addr, your_mac) <= 0) {
-        //No hace falta mandar mensaje, ya lo hace arp_resolve
-        return -1;
+
+    if (ipv4_route_lookup(&multicast, dst) != 4 ) {
+        //Mandamos ARP resolve para conocer la MAC del siguiente salto
+        //if (!is_broadcast) {
+        if (arp_resolve(layer->iface, layer->addr, next_jump->gateway_addr, your_mac) <= 0) {
+            //No hace falta mandar mensaje, ya lo hace arp_resolve
+            return -1;
+        }
     }
+    else {
+        memcpy(your_mac, MAC_MULTICAST_ADDR, sizeof(mac_addr_t));
+    }
+
     int bytes_send = eth_send(layer->iface, your_mac, IPV4_PROTOCOL, (unsigned char *) &ipv4_frame,
                               ipv4_frame_len);
     if (bytes_send == -1) {
@@ -228,6 +255,16 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
     return (bytes_send - IPV4_HEADER_SIZE);
 }
 
+int is_multicast(ipv4_addr_t addr) {
+    int is_multicast = 1;
+
+    for (int i; i < 4; i++) {
+        if ((addr[i] & IPv4_MULTICAST_NETWORK[i]) != IPv4_MULTICAST_ADDR[i]) {
+            return 0;
+        }
+    }
+    return is_multicast;
+}
 
 int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char buffer[], ipv4_addr_t sender, int buffer_len,
               long int timeout) {
@@ -259,7 +296,6 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char buffer[], ipv
             printf("No se recibio el paquete\n");
             return -1;
         } else if (frame_len == 0) {
-            printf("TIMEOUT\n");
             return 0;
         }
             //si por alguna razon el buffer que nos devuelve es menor que
@@ -290,7 +326,7 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char buffer[], ipv
     todo el payload, se perderian datos, pero de comprobar eso se
     encargan las capas superiores, aqui solo que no de segmentatioFault
     */
-    int payload_len = frame_len - IPV4_HEADER_SIZE;
+    int payload_len = ntohs(ipv4_frame->total_len) - IPV4_HEADER_SIZE;
     if (buffer_len > payload_len) {
         buffer_len = payload_len;
     }
@@ -313,10 +349,3 @@ int ipv4_close(ipv4_layer_t *ipv4_layer) {
     return 1;
 }
 
-int is_multicast(ipv4_addr_t addr) {
-    int is_multicast = 0;
-    if ( (addr & IPv4_MULTICAST_NETWORK) == IPv4_MULTICAST_ADDR){
-        is_multicast=1;
-    }
-    return is_multicast;
-}

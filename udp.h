@@ -16,7 +16,6 @@
 
 typedef struct udp_layer {
     uint16_t source_port;
-    uint16_t destination_port;
     ipv4_layer_t *ipv4_layer;
 
 } udp_layer_t;
@@ -33,9 +32,9 @@ typedef struct udp_packet {
 
 udp_layer_t *udp_open(uint16_t src_port, char *ip_config, char *route_config);
 
-int udp_send(udp_layer_t *layer, ipv4_addr_t dst, uint16_t protocol, uint16_t port_out, unsigned char data[], int payload_len);
+int udp_send(udp_layer_t *layer, ipv4_addr_t dst, uint16_t port_out, unsigned char data[], int payload_len);
 
-int udp_recv(udp_layer_t *layer, long int timeout, uint8_t protocol, ipv4_addr_t sender, uint16_t *port, unsigned char * payload, int payload_len);
+int udp_recv(udp_layer_t *layer, long int timeout, ipv4_addr_t sender, uint16_t *port, unsigned char * payload, int payload_len);
 
 void udp_close(udp_layer_t *my_layer);
 

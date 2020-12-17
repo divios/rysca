@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     //el nombre del archivo de text de la config y routas
     //y la ip al que se le debe enviar el mensaje
 
-    if ((argc <= 6) || (argc > 7)) { ;
+    if ((argc <= 6) || (argc > 7)) {
         printf("       <string.txt>: Nombre del archivo config.txt\n");
         printf("       <string.txt>: Nombre del archivo route_table.txt\n");
         printf("        <ip>: ip del pc del cual necesitas su MAC\n");
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
     };
 
     printf("Enviando paquete\n");
-    if (udp_send(udp_layer, ip_addr, UDP_PROTOCOL, port_out, payload, payload_len_input) == -1) {
+    if (udp_send(udp_layer, ip_addr, port_out, payload, payload_len_input) == -1) {
         printf("No se pudo enviar\n");
         exit(-1);
     }
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
     ipv4_addr_t sender;
     uint16_t *port = malloc(sizeof(uint16_t));
 
-    int payload_len = udp_recv(udp_layer, timeout, UDP_PROTOCOL, sender, port, payload, payload_len_input);
+    int payload_len = udp_recv(udp_layer, timeout, sender, port, payload, payload_len_input);
 
     if (payload_len == -1) {
         printf("Error al recibir la trama\n");
