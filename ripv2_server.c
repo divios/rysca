@@ -15,7 +15,8 @@ int main(int argc, char *argv[]) {
     ipv4_addr_t sender_ip;
     uint16_t port;
     ripv2_msg_t buffer;
-    int min_time, bytes, n_entries, index;
+    int bytes, n_entries, index, childpid;
+    long int min_time;
 
 
     if ((argc <= 3) || (argc > 4)) {
@@ -36,23 +37,82 @@ int main(int argc, char *argv[]) {
 
     ripv2_inicialize_timers(last_index, timers);
 
-    ripv2_route_table_output_with_timers(table, timers);
-
     udp_layer_t *udp_layer = udp_open(RIP_PORT, config_name, route_table_name);
     if (udp_layer == NULL) {
         printf("Fallo al abrir la interfaz");
         exit(-1);
     }
 
+    ///// MENSAJE DE INICIO PIDIENDO ////
+    ripv2_msg_t start_msg;
+    start_msg.type = RIPv2_REQUEST;
+    start_msg.version = RIPv2_TYPE_VERSION;
+    start_msg.routing_domain = UNUSED;
+
+    entrada_rip_t request_all;
+    request_all.family_directions = UNUSED;
+    request_all.route_label = UNUSED;
+    memcpy(request_all.gw, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t));
+    memcpy(request_all.mask, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t));
+    memcpy(request_all.subnet, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t));
+    request_all.metric = htonl(16);
+
+    start_msg.entrada[0] = request_all;
+
+    ipv4_addr_t RIPv2_MULTICAST_ADDR = {224, 0, 0, 9};
+
+    udp_send(udp_layer, RIPv2_MULTICAST_ADDR, RIP_PORT, (unsigned char *) &start_msg,
+             RIP_HEADER_SIZE + sizeof(entrada_rip_t));
+
+    ///////////////////////////////////
+
+    ripv2_route_table_output_with_timers(table, timers);
+
+
+    if ((childpid = fork()) == 0) {
+
+        while (1) {
+            sleep(10);
+            ripv2_msg_t msg;
+            msg.type = RIPv2_RESPONSE;
+            msg.version = RIPv2_TYPE_VERSION;
+            msg.routing_domain = UNUSED;
+
+            for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
+                entrada_rip_t *entry = table->routes[i];
+
+                if (entry != NULL) {
+                    msg.entrada[index] = *(entry);
+                    msg.entrada[index].family_directions = htons(msg.entrada[index].family_directions);
+                    msg.entrada[index].metric = htonl(msg.entrada[index].metric);
+                    index++;
+                }
+            }
+
+            ipv4_addr_t RIPv2_MULTICAST_ADDR = {224, 0, 0, 9};
+
+            udp_layer->source_port = htons(RIP_PORT+1);
+
+            udp_send(udp_layer, RIPv2_MULTICAST_ADDR, RIP_PORT, (unsigned char *) &msg,
+                     sizeof(entrada_rip_t) * index + RIP_HEADER_SIZE); //probablemente me esta dando error
+                                                                                 //porque ya esta en uso
+
+            printf("Enviador mensaje periodico\n");
+
+        }
+    }
+
+
     while (1) {
-
-
 
         min_time = ripv2_timeleft(table, *timers);
 
-        printf("El menor timer es de %i\n", min_time);
+        printf("El menor timer es de %li\n", min_time);
 
-        bytes = udp_recv(udp_layer, min_time, sender_ip, &port, (unsigned char *) &buffer, sizeof(buffer));
+        bytes = udp_recv(udp_layer, min_time, sender_ip, &port, (unsigned char *) &buffer,
+                         sizeof(buffer)); //por extrañas razones no sale de este bucle nunca sin importar el timer
+
+        printf("bytes %i\n", bytes);
 
         ripv2_route_table_remove_expired(table, timers); //elimina expirados o metric infinito
         ripv2_route_table_write(table, rip_route_table_name);
@@ -75,8 +135,8 @@ int main(int argc, char *argv[]) {
 
             if (n_entries == 1 && buffer.entrada[0].family_directions == 0 &&
                 ripv2_is_infinite(ntohl(buffer.entrada[0].metric))) {
-
                 // Entramos aqui si nos piden toda la tabla de rutas
+
                 for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {
                     entrada_rip_t *entry = table->routes[i];
 
@@ -88,11 +148,7 @@ int main(int argc, char *argv[]) {
                     }
                 }
 
-
-
             } else { //si nos piden sola alguna tablas en concreto
-
-
 
                 for (int i = 0; i < n_entries; i++) {
                     entrada_rip_t entry = buffer.entrada[i];
@@ -116,7 +172,7 @@ int main(int argc, char *argv[]) {
             entrada_rip_t entry;
 
             for (int i = 0; i < n_entries; i++) {
-                 entry = buffer.entrada[i];
+                entry = buffer.entrada[i];
 
                 //printf("Debug 1\n");
 
@@ -150,18 +206,16 @@ int main(int argc, char *argv[]) {
                             //Si ademas tienen destintas metricas actualizamos
                             entry_on_table->metric = ntohl(entry.metric);
                         }
-                    }
-
-                    else if (ntohl(entry.metric) < entry_on_table->metric)  {
-                            //si la entrada que recibimos es menor que la que tenemos actualizamos
-                            memcpy(entry_on_table->gw, sender_ip, sizeof(ipv4_addr_t));
-                        }
-
+                    } else if (ntohl(entry.metric) < entry_on_table->metric) {
+                        //si la entrada que recibimos es menor que la que tenemos actualizamos
+                        memcpy(entry_on_table->gw, sender_ip, sizeof(ipv4_addr_t));
                     }
 
                 }
 
             }
+
+        }
 
         ripv2_route_table_output_with_timers(table, timers);
         ripv2_route_table_write(table, rip_route_table_name);

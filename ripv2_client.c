@@ -62,6 +62,8 @@ int main(int argc, char *argv[]) {
 
         }
 
+        udp_send(udp_layer, ip_addr, RIP_PORT, (unsigned char *) &msg,  sizeof(entrada_rip_t) * n_routes + RIP_HEADER_SIZE);
+
     }
 
 
@@ -77,10 +79,14 @@ int main(int argc, char *argv[]) {
 
         msg.entrada[0] = request_all;
         n_routes++;
+
+        ipv4_addr_t RIPv2_MULTICAST_ADDR = {224, 0, 0, 9};
+
+        udp_send(udp_layer, RIPv2_MULTICAST_ADDR, RIP_PORT, (unsigned char *) &msg,  sizeof(entrada_rip_t) * n_routes + RIP_HEADER_SIZE);
     }
 
 
-    udp_send(udp_layer, ip_addr, RIP_PORT, (unsigned char *) &msg,  sizeof(entrada_rip_t) * n_routes + RIP_HEADER_SIZE);
+
 
     uint16_t port;
     ripv2_msg_t msg_recv;

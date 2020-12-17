@@ -9,6 +9,7 @@
 
 /* Dirección MAC de difusión: FF:FF:FF:FF:FF:FF */
 mac_addr_t MAC_BCAST_ADDR = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+mac_addr_t MAC_MULTICAST_ADDR = {0x01, 0x00, 0x5e, 0x00, 0x00, 0x09};
 
 /* Estructura del manejador del interfaz ethernet */
 struct eth_iface {
@@ -175,6 +176,8 @@ int eth_send
     memcpy(eth_frame.dest_addr, dst, MAC_ADDR_SIZE);
     memcpy(eth_frame.src_addr, iface->mac_address, MAC_ADDR_SIZE);
     eth_frame.type = htons(type);
+
+    bzero((char *) &(eth_frame.payload), sizeof(ETH_MTU)); //rellenamos a 0
     memcpy(eth_frame.payload, payload, payload_len);
     int eth_frame_len = ETH_HEADER_SIZE + payload_len;
 

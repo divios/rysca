@@ -18,7 +18,6 @@
 #define RIP_PORT 520
 #define RIP_HEADER_SIZE 4
 
-
 typedef struct entrada_rip{
 
     uint16_t family_directions;

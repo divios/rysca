@@ -11,6 +11,7 @@ typedef unsigned char mac_addr_t [MAC_ADDR_SIZE];
 
 /* Dirección MAC de difusión: "FF:FF:FF:FF:FF:FF" */
 extern mac_addr_t MAC_BCAST_ADDR;
+extern mac_addr_t MAC_MULTICAST_ADDR;
 
 /* Longitud en bytes de una cadena de texto que representa una dirección MAC */
 #define MAC_STR_LENGTH 18

@@ -224,16 +224,27 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
     ipv4_frame.checksum = IPV4_CHECKSUM_INIT;
     memcpy(ipv4_frame.source, layer->addr, sizeof(ipv4_addr_t));
     memcpy(ipv4_frame.dest, dst, sizeof(ipv4_addr_t));
+
+    ipv4_route_t multicast;
+    memcpy(multicast.subnet_addr, IPv4_MULTICAST_ADDR, sizeof(ipv4_addr_t));
+    memcpy(multicast.subnet_mask, IPv4_MULTICAST_NETWORK, sizeof(ipv4_addr_t));
+    if (ipv4_route_lookup(&multicast, dst) == 4 ) ipv4_frame.TTL = 1;
+
     ipv4_frame.checksum = htons(ipv4_checksum((unsigned char *) &ipv4_frame, IPV4_HEADER_SIZE));
 
     memcpy(ipv4_frame.data, payload, payload_len);
-    //Mandamos ARP resolve para conocer la MAC del siguiente salto
-    //if (!is_broadcast) {
+
+    if (ipv4_route_lookup(&multicast, dst) != 4 ) {
+        //Mandamos ARP resolve para conocer la MAC del siguiente salto
+        //if (!is_broadcast) {
         if (arp_resolve(layer->iface, layer->addr, next_jump->gateway_addr, your_mac) <= 0) {
             //No hace falta mandar mensaje, ya lo hace arp_resolve
             return -1;
         }
-    //} else memcpy(your_mac, BRO)
+    }
+    else {
+        memcpy(your_mac, MAC_MULTICAST_ADDR, sizeof(mac_addr_t));
+    }
 
     int bytes_send = eth_send(layer->iface, your_mac, IPV4_PROTOCOL, (unsigned char *) &ipv4_frame,
                               ipv4_frame_len);
