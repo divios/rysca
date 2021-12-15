@@ -41,7 +41,7 @@ struct eth_frame {
 
 /* eth_iface_t * eth_open ( char* ifname );
  *
- * DESCRIPCIÓN: 
+ * DESCRIPCIÓN:
  *   Esta función inicializa la interfaz Ethernet especificada para que pueda
  *   ser utilizada por las restantes funciones de la librería.
  *
@@ -59,7 +59,7 @@ struct eth_frame {
  *   accedida directamente, en su lugar use las funciones de la librería.
  *
  * ERRORES:
- *   La función devuelve 'NULL' si se ha producido algún error. 
+ *   La función devuelve 'NULL' si se ha producido algún error.
  */
 eth_iface_t *eth_open(char *ifname) {
     struct eth_iface *eth_iface;
@@ -88,13 +88,13 @@ eth_iface_t *eth_open(char *ifname) {
 
 
 /* char * eth_getname ( eth_iface_t * iface );
- * 
+ *
  * DESCRIPCIÓN:
  *   Esta función devuelve el nombre de la interfaz Ethernet especificada.
- *  
+ *
  * PARÁMETROS:
  *   'iface': Manejador de la interfaz ethernet de la que se quiere obtener su
- *            nombre. 
+ *            nombre.
  *            La interfaz debe haber sido inicializada con 'eth_open()'
  *            previamente.
  *
@@ -123,20 +123,21 @@ char *eth_getname(eth_iface_t *iface) {
  *
  * PARÁMETROS:
  *   'iface': Manejador de la interfaz Ethernet de la que se quiere obtener su
- *            dirección. 
+ *            dirección.
  *            La interfaz debe haber sido inicializada con 'eth_open()'
  *            previamente.
  *    'addr': Array donde se copiará la dirección MAC de la interfaz Ethernet.
  *            Las direcciones MAC ocupan 'MAC_ADDR_SIZE' bytes.
  */
-void eth_getaddr(eth_iface_t *iface, mac_addr_t addr) {
+void eth_getaddr(eth_iface_t *iface, mac_addr_t addr)
+{
     if (iface != NULL) {
         memcpy(addr, iface->mac_address, MAC_ADDR_SIZE);
     }
 }
 
-/* int eth_send 
- * ( eth_iface_t * iface, 
+/* int eth_send
+ * ( eth_iface_t * iface,
  *   mac_addr_t dst, uint16_t type, unsigned char * data, int data_len );
  *
  * DESCRIPCIÓN:
@@ -156,9 +157,9 @@ void eth_getaddr(eth_iface_t *iface, mac_addr_t addr) {
  *
  * VALOR DEVUELTO:
  *   El número de bytes que han podido ser enviados.
- * 
+ *
  * ERRORES:
- *   La función devuelve '-1' si se ha producido algún error. 
+ *   La función devuelve '-1' si se ha producido algún error.
  */
 int eth_send
         (eth_iface_t *iface,
@@ -176,8 +177,6 @@ int eth_send
     memcpy(eth_frame.dest_addr, dst, MAC_ADDR_SIZE);
     memcpy(eth_frame.src_addr, iface->mac_address, MAC_ADDR_SIZE);
     eth_frame.type = htons(type);
-
-    bzero((char *) &(eth_frame.payload), sizeof(ETH_MTU)); //rellenamos a 0
     memcpy(eth_frame.payload, payload, payload_len);
     int eth_frame_len = ETH_HEADER_SIZE + payload_len;
 
@@ -202,8 +201,8 @@ int eth_send
     return (bytes_sent - ETH_HEADER_SIZE);
 }
 
-/* int eth_recv 
- * ( eth_iface_t * iface, 
+/* int eth_recv
+ * ( eth_iface_t * iface,
  *   mac_addr_t src, uint16_t type, unsigned char buffer[], long int timeout );
  *
  * DESCRIPCIÓN:
@@ -217,14 +216,14 @@ int eth_send
  *
  * PARÁMETROS:
  *    'iface': Manejador de la interfaz Ethernet por la que se desea recibir
- *             un paquete. 
+ *             un paquete.
  *             La interfaz debe haber sido inicializada con 'eth_open()'
  *             previamente.
  *      'src': Dirección MAC del equipo que envió la trama Ethernet recibida.
  *             Este es un parámetro de salida. La dirección se copiará en la
  *             memoria indicada, que debe estar reservada previamente.
  *     'type': Valor del campo 'Tipo' de la trama Ethernet que se desea
- *             recibir. 
+ *             recibir.
  *             Las tramas con un valor 'type' diferente serán descartadas.
  *   'buffer': Array donde se almacenarán los datos de la trama recibida.
  *  'buf_len': Longitud del 'buffer' dónde se almacenarán los datos de la trama
@@ -240,9 +239,9 @@ int eth_send
  *   La longitud en bytes de los datos de la trama recibida (que puede
  *   ser mayor que 'buf_len'), o '0' si no se ha recibido ninguna
  *   trama porque ha expirado el temporizador.
- * 
+ *
  * ERRORES:
- *   La función devuelve '-1' si se ha producido algún error. 
+ *   La función devuelve '-1' si se ha producido algún error.
  */
 int eth_recv
         (eth_iface_t *iface, mac_addr_t src, uint16_t type, unsigned char buffer[],
@@ -309,7 +308,7 @@ int eth_recv
 }
 
 
-/* int eth_poll 
+/* int eth_poll
  * ( eth_iface_t * ifaces[], int ifnum, long int timeout );
  *
  * DESCRIPCIÓN:
@@ -334,7 +333,7 @@ int eth_recv
  * VALOR DEVUELTO:
  *   El índice del primer interfaz [0, ifnum-1] que tiene una trama lista para
  *   ser recibida o '-2' si ha expirado el temporizador.
- * 
+ *
  * ERRORES:
  *   La función devuelve '-1' si se ha producido algún error.
  */
@@ -365,7 +364,7 @@ int eth_poll
 
 
 /* int eth_close ( eth_iface_t * iface );
- * 
+ *
  * DESCRIPCIÓN:
  *   Esta función cierra la interfaz Ethernet especificada y libera la memoria
  *   de su manejador.
@@ -375,9 +374,9 @@ int eth_poll
  *
  * VALOR DEVUELTO:
  *   Devuelve 0 si la interfaz Ethernet se ha cerrado correctamente.
- * 
+ *
  * ERRORES:
- *   La función devuelve '-1' si se ha producido algún error. 
+ *   La función devuelve '-1' si se ha producido algún error.
  */
 int eth_close(eth_iface_t *iface) {
     int err = -1;
@@ -448,7 +447,7 @@ int mac_str_addr(char *str, mac_addr_t addr) {
 
 
 /* void print_pkt ( unsigned char * packet, int pkt_len, int hdr_len );
- * 
+ *
  * DESCRIPCIÓN:
  *   Esta función permite imprimir por salida estándar los contenidos del
  *   paquete especificado. Además, los primeros 'hdr_len' bytes del mensaje se

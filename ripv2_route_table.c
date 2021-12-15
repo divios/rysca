@@ -96,14 +96,16 @@ int ripv2_switch_lookup(unsigned char mask) {
 int ripv2_route_lookup(entrada_rip_t *route, ipv4_addr_t addr) {
     int prefix_length = 0;
 
-    //recorremos los 4 octetos
+    //Recorremos los 4 octetos
+
     for (int i = 0; i < 4; i++) {
-        //si en algun momento la ip a buscar con la mascara aplicada no es
-        //igual a la ip de la subred paramos y retornamos -1
+
+        //Si la ip y la máscara a buscar no coincide con la ip de la subred se hace un return -1
+
         if ((addr[i] & route->mask[i]) != route->subnet[i]) {
             return -1;
         }
-        //contamos a la vez el numero de 1s cada octeto de la mascara
+
         prefix_length += ripv2_switch_lookup(route->mask[i]);
     }
     return prefix_length;
@@ -117,6 +119,7 @@ int ripv2_route_lookup(entrada_rip_t *route, ipv4_addr_t addr) {
  * PARÁMETROS:
  *   'route': Ruta que se desea imprimir.
  */
+
 void ripv2_route_print(entrada_rip_t *route) {
     if (route != NULL) {
         char subnet_str[IPv4_STR_MAX_LENGTH];
@@ -131,7 +134,6 @@ void ripv2_route_print(entrada_rip_t *route) {
     }
 }
 
-
 /* void ipv4_route_free ( ipv4_route_t * route );
  *
  * DESCRIPCIÓN:
@@ -141,6 +143,7 @@ void ripv2_route_print(entrada_rip_t *route) {
  * PARÁMETROS:
  *   'route': Ruta que se desea liberar.
  */
+
 void ripv2_route_free(entrada_rip_t *route) {
     if (route != NULL) {
         free(route);
@@ -165,6 +168,7 @@ void ripv2_route_free(entrada_rip_t *route) {
  *   La función imprime un mensaje de error y devuelve NULL si se ha
  *   producido algún error al leer la ruta.
  */
+
 entrada_rip_t *ripv2_route_read(char *filename, int linenum, char *line) {
     entrada_rip_t *route = NULL;
 
@@ -308,7 +312,6 @@ rip_route_table_t *ripv2_route_table_create() {
     return table;
 }
 
-
 /* int ipv4_route_table_add ( ipv4_route_table_t * table,
  *                            ipv4_route_t * route );
  * DESCRIPCIÓN:
@@ -328,8 +331,6 @@ rip_route_table_t *ripv2_route_table_create() {
  *   especificada.
  */
 
-
-
 int ripv2_route_table_add(rip_route_table_t *table, entrada_rip_t *route) {
     int route_index = -1;
 
@@ -348,7 +349,6 @@ int ripv2_route_table_add(rip_route_table_t *table, entrada_rip_t *route) {
     return route_index;
 }
 
-
 entrada_rip_t *ripv2_route_table_remove(rip_route_table_t *table, int index) {
     entrada_rip_t *removed_rip_entry = NULL;
     if ((table != NULL) && (index >= 0) && (index < RIP_ROUTE_TABLE_SIZE)) {
@@ -358,7 +358,6 @@ entrada_rip_t *ripv2_route_table_remove(rip_route_table_t *table, int index) {
     return removed_rip_entry;
 }
 
-//probablemente ni se utilice
 entrada_rip_t *ripv2_route_table_lookup(rip_route_table_t *table, entrada_rip_t *entrada) {
 
     entrada_rip_t *best_route = NULL;
@@ -613,7 +612,7 @@ int ripv2_timeleft(rip_route_table_t *table, timers_t table_timers){
 }
 
 
-void ripv2_inicialize_timers(int last_index, timers_t *table_timers) {
+void ripv2_initialize_timers(int last_index, timers_t *table_timers) {
 
     if(last_index > 0 && last_index <= RIP_ROUTE_TABLE_SIZE) {
         for (int i = 0; i < RIP_ROUTE_TABLE_SIZE; i++) {

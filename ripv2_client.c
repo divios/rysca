@@ -24,7 +24,8 @@ int main(int argc, char *argv[]) {
     char *route_table_name = argv[2];
     char *ip_str = argv[3];
 
-    //comprobamos que la IP es valida
+    //Confirmamos que la IP sea válida
+
     ipv4_addr_t ip_addr;
     if (ipv4_str_addr(ip_str, ip_addr) != 0) {
         printf("Ip no valida\n");
@@ -44,7 +45,9 @@ int main(int argc, char *argv[]) {
 
     int n_routes = 0;
 
-    if (argc == 5) { //Si especifiamos tabla_routas_txt mandamos solo las que estan ahi
+    if (argc == 5) {
+
+      //Si existe route_table_name mandamos solo las que estan ahi
 
         char *rip_route_table_name = argv[4];
         rip_route_table_t *rip_table = ripv2_route_table_create();
@@ -67,7 +70,9 @@ int main(int argc, char *argv[]) {
     }
 
 
-    else { //si no especificamos nada perdimos por toda la tabla
+    else {
+
+      //Si no se especifica route_table_name se va aquí
 
         entrada_rip_t request_all;
         request_all.family_directions = UNUSED;
@@ -84,9 +89,6 @@ int main(int argc, char *argv[]) {
 
         udp_send(udp_layer, RIPv2_MULTICAST_ADDR, RIP_PORT, (unsigned char *) &msg,  sizeof(entrada_rip_t) * n_routes + RIP_HEADER_SIZE);
     }
-
-
-
 
     uint16_t port;
     ripv2_msg_t msg_recv;

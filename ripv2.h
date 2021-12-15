@@ -1,7 +1,3 @@
-//
-// Created by serbe on 01/12/2020.
-//
-
 #ifndef RYSCA_RIPV2_H
 #define RYSCA_RIPV2_H
 

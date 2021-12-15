@@ -142,24 +142,24 @@ void ipv4_getAddr(ipv4_layer_t *layer, ipv4_addr_t addr) {
 
 ipv4_layer_t *ipv4_open(char *file_config, char *file_conf_route) {
 
-    //Reservamos memoria para el nombre de la interfaz y la struct
-    //que guarda toda la informacion necesaria para la interfaz ipv4
+    //Reservamos memoria para ifname y el puntero al struct ipv4_layer
+
     char ifname[IFACE_NAME_MAX_LENGTH];
     ipv4_layer_t *ipv4_layer = malloc(sizeof(ipv4_layer_t));
 
-    //Leemos el fichero de config y guardamos el nombre de la interfaz, la ip y
-    //la mascara asociadas a estas
+    //Leemos el fichero config y guardamos el nombre de la interfaz, la ip y la mascara asociadas a estas
+
     if (ipv4_config_read(file_config, ifname, ipv4_layer->addr, ipv4_layer->network) != 0) {
         return NULL;
     }
 
-    //reservamos memoria para una routing table y guardamos
-    //la tabla leida del archivo de texto en esta variable
+    //Reservamos memoria para una routing table y la guardamos en la variable
     ipv4_layer->routing_table = ipv4_route_table_create();
     ipv4_route_table_read(file_conf_route, ipv4_layer->routing_table);
 
 
-    //Finalmente abrimos a nivel eth con el nombre que nos pasaron;
+    //Hacemos un open de la interfaz con nombre ifname
+
     ipv4_layer->iface = eth_open(ifname);
 
     return ipv4_layer;
@@ -235,10 +235,11 @@ int ipv4_send(ipv4_layer_t *layer, ipv4_addr_t dst, uint8_t protocol,
     memcpy(ipv4_frame.data, payload, payload_len);
 
     if (ipv4_route_lookup(&multicast, dst) != 4 ) {
-        //Mandamos ARP resolve para conocer la MAC del siguiente salto
-        //if (!is_broadcast) {
+
+        //Usamos arp_resolve para conocer la MAC del siguiente salto
+
         if (arp_resolve(layer->iface, layer->addr, next_jump->gateway_addr, your_mac) <= 0) {
-            //No hace falta mandar mensaje, ya lo hace arp_resolve
+
             return -1;
         }
     }
@@ -269,15 +270,12 @@ int is_multicast(ipv4_addr_t addr) {
 int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char buffer[], ipv4_addr_t sender, int buffer_len,
               long int timeout) {
 
-    //inicializamos variables
-
     timerms_t timer;
     timerms_reset(&timer, timeout);
 
     mac_addr_t mac;
     int frame_len;
 
-    //creamos variables auxiliares
     int ipv4_buffer_len = buffer_len + IPV4_HEADER_SIZE;
     unsigned char ipv4_buffer[ipv4_buffer_len];
     ipv4_message_t *ipv4_frame = NULL;
@@ -285,33 +283,33 @@ int ipv4_recv(ipv4_layer_t *layer, uint8_t protocol, unsigned char buffer[], ipv
     while (1) {
 
         //Miramos cuanto tiempo nos falta
+
         long int time_left = timerms_left(&timer);
 
-        //recibimos el mensaje
+        //Hacemos un receive por la capa ethernet
+
         frame_len = eth_recv(layer->iface, mac, IPV4_PROTOCOL, ipv4_buffer, ipv4_buffer_len, time_left);
 
-        //Si es un error (-1) y si el tiempo se ha acabado sin recibir ningun mensaje (0), retornamos -1
-        //Se puede distinguir entre las dos si queremos...
+        //Si es un error o si el tiempo se ha acabado sin recibir ningun mensaje se hace un return de -1
+
         if (frame_len == -1) {
             printf("No se recibio el paquete\n");
             return -1;
         } else if (frame_len == 0) {
             return 0;
         }
-            //si por alguna razon el buffer que nos devuelve es menor que
-            //la longitud minima que deberia tener un datagram, es decir la cabecera de ipv4
-            //seguimos con la siguiente itineracion
+            //Si el buffer que nos devuelve es menor que la longitud minima que deberia tener un datagram se espera para añadir el siguiente
+
         else if (frame_len < IPV4_HEADER_SIZE) {
             printf("Tamaño de trama IPV4 invalida\n");
             continue;
         }
 
-        //Hacemos casting para manejar el buffer como una estructura ip
+        //Hacemos un cast a un struct ip
         ipv4_frame = (ipv4_message_t *) ipv4_buffer;
 
-        //Aqui comprobamos que en el datagram IP sea del tipo que esperamos
-        //y va dirigido a nuestra IP, si es asi, guardamos la payload->sender en sender
-        //hacemos break. Tambien acceptamos direccion multicast;
+        //Confirmamos que el datagram IP sea del tipo correcto y el destino sea nuestra IP, tras esto se guardan los datos y se hace un break
+        
         if (ipv4_frame->protocol == protocol && (memcmp(ipv4_frame->dest, layer->addr, sizeof(ipv4_addr_t)) == 0 ||
                is_multicast(ipv4_frame->dest) ) ) {
             break;
@@ -348,4 +346,3 @@ int ipv4_close(ipv4_layer_t *ipv4_layer) {
     free(ipv4_layer);
     return 1;
 }
-

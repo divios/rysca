@@ -9,11 +9,10 @@
 
 
 int main(int argc, char *argv[]) {
-    //Necesitamos como parametros el nombre de la interfaz
-    //el nombre del archivo de text de la config y routas
-    //y la ip al que se le debe enviar el mensaje
 
-    if ((argc <= 5) || (argc > 6)) {
+    //Se pasan como parámetros el nombre de la interfaz, el archivo .txt con la configuración y la ip de destino
+
+        if ((argc <= 5) || (argc > 6)) {
         printf("       <string.txt>: Nombre del archivo config.txt\n");
         printf("       <string.txt>: Nombre del archivo route_table.txt\n");
         printf("        <protocol>: tipo del mensaje a enviar\n");
@@ -22,14 +21,15 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
-    //procesamos los argumentos
-
+    //Guardamos los parámetros en los campos correspondientes
 
     char *config_name = argv[1];
     char *route_table_name = argv[2];
     char *ipv4_type_str = argv[3];
     char *endptr;
+
     /* El Tipo puede indicarse en hexadecimal (0x0800) o en decimal (2048) */
+
     int ipv4_type_int = (int) strtol(ipv4_type_str, &endptr, 0);
     if ((*endptr != '\0') || (ipv4_type_int < 0) || (ipv4_type_int > 0x0000FFFF)) {
         printf("Error en el argumento protocol\n");
@@ -40,22 +40,24 @@ int main(int argc, char *argv[]) {
 
     char *ip_str = argv[4];
 
-    //comprobamos que la IP es valida
+    //Comprobamos que es una IP válida
+
     ipv4_addr_t ip_addr;
     if (ipv4_str_addr(ip_str, ip_addr) != 0) {
         printf("Ip no valida\n");
         exit(-1);
     }
-    
+
     char *payload_len_str = argv[5];
     int payload_len_input = atoi(payload_len_str);
-    
+
     if (payload_len_input > MRU){
         printf("Longitud del argumento payload demasiado larga\n");
         exit(-1);
     }
 
-    //Abrimos la interfaz y comprobamos que se leyo el archivo;
+    //Hacemos un open en la interfaz y comprobamos que se haya leído bien
+
     ipv4_layer_t *ip_layer = ipv4_open(config_name, route_table_name);
 
     if (ip_layer == NULL) {
@@ -64,7 +66,7 @@ int main(int argc, char *argv[]) {
     }
 
 
-    //rellenamos el payload de numeros aleatorios
+    //Rellenamos la parte de datos del mensaje
 
     unsigned char payload[payload_len_input];
     int i;
@@ -72,7 +74,7 @@ int main(int argc, char *argv[]) {
         payload[i] = (unsigned char) i;
     };
 
-    //mandamos el mensaje, Que protocolo?
+    //Mandamos el mensaje por el protocolo que necesitemos
 
     if (ipv4_send(ip_layer, ip_addr, ipv4_protocol, payload, payload_len_input) == -1) {
         printf("No se pudo enviar el paquete\n");

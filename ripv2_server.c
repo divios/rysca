@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 
     int last_index = ripv2_route_table_read(rip_route_table_name, table);
 
-    ripv2_inicialize_timers(last_index, timers);
+    ripv2_initialize_timers(last_index, timers);
 
     udp_layer_t *udp_layer = udp_open(RIP_PORT, config_name, route_table_name);
     if (udp_layer == NULL) {
@@ -223,5 +223,3 @@ int main(int argc, char *argv[]) {
     }
 
 }
-
-

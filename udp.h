@@ -1,7 +1,3 @@
-//
-// Created by serbe on 13/10/2020.
-//
-
 #ifndef RYSCA_UDP_H
 #define RYSCA_UDP_H
 
@@ -39,5 +35,3 @@ int udp_recv(udp_layer_t *layer, long int timeout, ipv4_addr_t sender, uint16_t 
 void udp_close(udp_layer_t *my_layer);
 
 #endif //RYSCA_UDP_H
-
-

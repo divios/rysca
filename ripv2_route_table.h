@@ -1,7 +1,3 @@
-//
-// Created by serbe on 01/12/2020.
-//
-
 #ifndef RYSCA_UDP_ROUTE_TABLE_H
 #define RYSCA_UDP_ROUTE_TABLE_H
 
@@ -51,7 +47,7 @@ int ripv2_route_table_remove_expired(rip_route_table_t *table, timers_t *table_t
 
 int ripv2_timeleft(rip_route_table_t *table, timers_t table_timers);
 
-void ripv2_inicialize_timers(int last_index, timers_t *table_timers);
+void ripv2_initialize_timers(int last_index, timers_t *table_timers);
 
 int ripv2_is_infinite(uint32_t metric);
 
